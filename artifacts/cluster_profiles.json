@@ -1,0 +1,151 @@
+{
+  "optimal_k": 4,
+  "evaluation": [
+    {
+      "k": 2,
+      "wcss": 57181.80782059524,
+      "silhouette": 0.24748609754301432,
+      "dbi": 1.6647859181642397,
+      "calinski_harabasz": 4671.888504422162
+    },
+    {
+      "k": 3,
+      "wcss": 45951.16463995303,
+      "silhouette": 0.24239547824969432,
+      "dbi": 1.4886373451024089,
+      "calinski_harabasz": 4739.18850303766
+    },
+    {
+      "k": 4,
+      "wcss": 38381.03060076584,
+      "silhouette": 0.2737399083631181,
+      "dbi": 1.302403113063808,
+      "calinski_harabasz": 4768.2187797505185
+    },
+    {
+      "k": 5,
+      "wcss": 33608.50881500152,
+      "silhouette": 0.2513377180163728,
+      "dbi": 1.4101388470092435,
+      "calinski_harabasz": 4616.049789536411
+    },
+    {
+      "k": 6,
+      "wcss": 30219.797716430287,
+      "silhouette": 0.2606952969429296,
+      "dbi": 1.2816322780789993,
+      "calinski_harabasz": 4442.947208499535
+    },
+    {
+      "k": 7,
+      "wcss": 27578.41741052507,
+      "silhouette": 0.25927099312872065,
+      "dbi": 1.2633378202986376,
+      "calinski_harabasz": 4296.12709373482
+    },
+    {
+      "k": 8,
+      "wcss": 25585.41641135853,
+      "silhouette": 0.26557579388815883,
+      "dbi": 1.2764166646819122,
+      "calinski_harabasz": 4135.734680780702
+    }
+  ],
+  "clusters": [
+    {
+      "cluster": 0,
+      "persona": "Disengaged",
+      "count": 3834,
+      "percentage": 25.561704113607576,
+      "means": {
+        "satisfaction_level": 0.47927490871152845,
+        "last_evaluation": 0.5462102243088158,
+        "number_project": 2.7222222222222223,
+        "average_montly_hours": 153.13458528951486,
+        "time_spend_company": 3.143192488262911
+      },
+      "turnover_rate": 0.41210224308815857,
+      "risk_level": "Sedang",
+      "badge_color": "#F59E0B",
+      "strategy": [
+        "Jadwalkan sesi coaching 1-on-1 dan asesmen kecocokan peran.",
+        "Susun rencana reskilling dan tindak lanjut keterlibatan."
+      ]
+    },
+    {
+      "cluster": 1,
+      "persona": "High Burnout",
+      "count": 1785,
+      "percentage": 11.900793386225748,
+      "means": {
+        "satisfaction_level": 0.17319887955182076,
+        "last_evaluation": 0.8073109243697478,
+        "number_project": 5.641456582633054,
+        "average_montly_hours": 247.96190476190475,
+        "time_spend_company": 4.256022408963585
+      },
+      "turnover_rate": 0.5411764705882353,
+      "risk_level": "Sangat Tinggi",
+      "badge_color": "#DC2626",
+      "strategy": [
+        "Redistribusi proyek dan pantau beban kerja untuk mencegah burnout.",
+        "Tinjau jam lembur, cuti pemulihan, kompensasi, dan peluang promosi."
+      ]
+    },
+    {
+      "cluster": 2,
+      "persona": "Senior Veteran",
+      "count": 1926,
+      "percentage": 12.840856057070472,
+      "means": {
+        "satisfaction_level": 0.753582554517134,
+        "last_evaluation": 0.8221910695742471,
+        "number_project": 4.20404984423676,
+        "average_montly_hours": 222.17705088265836,
+        "time_spend_company": 6.178608515057113
+      },
+      "turnover_rate": 0.470404984423676,
+      "risk_level": "Tinggi",
+      "badge_color": "#EA580C",
+      "strategy": [
+        "Tinjau jenjang jabatan dan tunjangan senioritas.",
+        "Pertimbangkan rotasi ke proyek strategis dan berbagi keahlian."
+      ]
+    },
+    {
+      "cluster": 3,
+      "persona": "Engaged Stars",
+      "count": 7454,
+      "percentage": 49.696646443096206,
+      "means": {
+        "satisfaction_level": 0.7504413737590555,
+        "last_evaluation": 0.7542326267775691,
+        "number_project": 3.81513281459619,
+        "average_montly_hours": 209.0033539039442,
+        "time_spend_company": 2.806815132814596
+      },
+      "turnover_rate": 0.015964582774349343,
+      "risk_level": "Rendah",
+      "badge_color": "#0D9488",
+      "strategy": [
+        "Pertimbangkan jalur leadership fast-track dan insentif retensi.",
+        "Tawarkan kesempatan mentoring dan proyek berdampak tinggi."
+      ]
+    }
+  ],
+  "training": {
+    "dataset": "HR_comma_sep.csv",
+    "rows": 14999,
+    "features": [
+      "satisfaction_level",
+      "last_evaluation",
+      "number_project",
+      "average_montly_hours",
+      "time_spend_company"
+    ],
+    "random_state": 42,
+    "silhouette_sample_size": 3000,
+    "duplicate_rows_retained": true,
+    "scikit_learn_version": "1.9.1"
+  }
+}
