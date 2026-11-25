@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% block content %}
+  <section class="kpi-grid" aria-label="Indikator utama">
+    <article class="card kpi-card">
+      <span class="kpi-label">Total karyawan</span>
+      <strong class="kpi-value">{{ total }}</strong>
+      <span class="kpi-footnote">tercatat dalam dataset</span>
+    </article>
+    <article class="card kpi-card">
+      <span class="kpi-label">Pernah keluar</span>
+      <strong class="kpi-value">{{ turnover }}</strong>
+      <span class="kpi-footnote">proporsi dari seluruh karyawan</span>
+    </article>
+    <article class="card kpi-card">
+      <span class="kpi-label">Rata-rata kepuasan</span>
+      <strong class="kpi-value">{{ satisfaction }}</strong>
+      <span class="kpi-footnote">skala 0 sampai 1</span>
+    </article>
+    <article class="card kpi-card">
+      <span class="kpi-label">Jam kerja rata-rata</span>
+      <strong class="kpi-value">{{ monthly_hours }}</strong>
+      <span class="kpi-footnote">per bulan</span>
+    </article>
+  </section>
+
+  <section class="card findings-card">
+    <div class="section-heading">
+      <div>
+        <span class="eyebrow">Dihitung dari dataset</span>
+        <h2>Temuan utama</h2>
+      </div>
+    </div>
+    <ul class="findings-list">
+      {% for insight in insights %}
+        <li><span class="finding-marker" aria-hidden="true">{{ loop.index }}</span>{{ insight }}</li>
+      {% endfor %}
+    </ul>
+  </section>
+
+  <section class="chart-grid">
+    <article class="card chart-card">
+      <div class="chart-heading">
+        <h2>{{ workload_summary.exit_rate }} karyawan di area beban tinggi dan kepuasan rendah pernah keluar</h2>
+        <p>Gelembung merangkum rentang jam kerja dan kepuasan; ukurannya menunjukkan jumlah karyawan dan warnanya menunjukkan tingkat keluar.</p>
+      </div>
+      <div class="chart-wrap">
+        <canvas
+          data-chart="workload-bubbles"
+          data-chart-payload="{{ workload_chart|tojson|forceescape }}"
+          role="img"
+          aria-label="Gelembung jumlah karyawan dan tingkat keluar menurut jam kerja dan kepuasan"
+        ></canvas>
+      </div>
+      <div class="bubble-legend" aria-label="Arti warna dan ukuran gelembung">
+        <span><i class="bubble-swatch bubble-low"></i>Keluar ≤15%</span>
+        <span><i class="bubble-swatch bubble-medium"></i>Keluar 15–30%</span>
+        <span><i class="bubble-swatch bubble-high"></i>Keluar &gt;30%</span>
+        <span><i class="bubble-size-key"></i>Gelembung lebih besar = lebih banyak karyawan</span>
+      </div>
+      <p class="chart-note">Area di atas 250 jam dan di bawah kepuasan 0,40 berisi {{ format_number(workload_summary.count) }} karyawan; {{ workload_summary.exit_rate }} pernah keluar. Rata-rata seluruh data: {{ workload_summary.overall_rate }}. Pola ini bukan penilaian individu.</p>
+    </article>
+
+    <article class="card chart-card">
+      <div class="chart-heading">
+        <h2>{{ project_heading }}</h2>
+        <p>Label tiap bar menunjukkan jumlah karyawan (n); garis putus-putus menandai rata-rata seluruh karyawan ({{ format_percent(project_chart.overall_rate) }}).</p>
+      </div>
+      <div class="chart-wrap project-chart-wrap">
+        <canvas
+          data-chart="project-turnover"
+          data-chart-payload="{{ project_chart|tojson|forceescape }}"
+          role="img"
+          aria-label="Persentase karyawan yang pernah keluar menurut jumlah proyek"
+        ></canvas>
+      </div>
+      <p class="chart-note">Bar merah menunjukkan tingkat keluar di atas 30%; teal menunjukkan 30% atau kurang.</p>
+    </article>
+  </section>
+{% endblock %}

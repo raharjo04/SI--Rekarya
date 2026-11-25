@@ -109,11 +109,11 @@ def test_load_artifacts_validates_optimal_cluster_count(tmp_path, monkeypatch):
     for key, path in paths.items():
         monkeypatch.setattr(artifact_module, key, path)
 
-    artifact_module.load_artifacts.clear()
+    artifact_module.load_artifacts.cache_clear()
     try:
         loaded = artifact_module.load_artifacts()
     finally:
-        artifact_module.load_artifacts.clear()
+        artifact_module.load_artifacts.cache_clear()
     assert loaded["kmeans"].n_clusters == loaded["profiles"]["optimal_k"]
 
 

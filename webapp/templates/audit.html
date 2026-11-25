@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block content %}
+  {% if result or error %}
+    {% include "partials/audit_results.html" %}
+  {% else %}
+    <section id="audit-results" class="audit-results">
+      {% from "partials/stepper.html" import stepper %}
+      {{ stepper(1) }}
+    </section>
+  {% endif %}
+
+  <div class="audit-grid">
+    <section class="card audit-step-card">
+      <span class="eyebrow">Langkah 1</span>
+      <h2>Siapkan file CSV</h2>
+      <p>Gunakan lima kolom fitur berikut. Data contoh hanya untuk menunjukkan format.</p>
+      <pre class="csv-example"><code>satisfaction_level,last_evaluation,number_project,average_montly_hours,time_spend_company
+0.72,0.81,4,201,3
+0.38,0.64,6,258,5</code></pre>
+      <a class="button button-secondary button-full" href="/audit/template.csv">Unduh template CSV</a>
+    </section>
+
+    <section class="card audit-step-card">
+      <span class="eyebrow">Langkah 2</span>
+      <h2>Unggah data</h2>
+      <p>Maksimal 5 MB dan 20.000 baris. Kolom jam kerja menerima ejaan <code>average_montly_hours</code> atau <code>average_monthly_hours</code>.</p>
+      <form
+        class="upload-form"
+        action="/audit"
+        method="post"
+        enctype="multipart/form-data"
+        hx-post="/audit"
+        hx-target="#audit-results"
+        hx-swap="outerHTML"
+        hx-encoding="multipart/form-data"
+      >
+        <label for="csv-file">Pilih file CSV</label>
+        <input id="csv-file" type="file" name="file" accept=".csv,text/csv" required>
+        <button class="button button-primary button-full" type="submit">Proses audit</button>
+        <span class="htmx-indicator" aria-live="polite">Memvalidasi dan memproses file…</span>
+        <p class="chart-note">Pastikan Anda berwenang menggunakan data ini. File tidak disimpan permanen; tautan hasil berlaku 15 menit.</p>
+      </form>
+    </section>
+  </div>
+{% endblock %}

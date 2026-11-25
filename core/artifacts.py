@@ -1,9 +1,9 @@
 import json
 import re
+from functools import lru_cache
 from pathlib import Path
 
 import joblib
-import streamlit as st
 
 from core.config import FEATURES, KMEANS_PATH, PCA_PATH, PROFILES_PATH, SCALER_PATH
 from core.contracts import ArtifactBundle, ClusterProfiles
@@ -72,7 +72,7 @@ def _read_profiles(path: Path) -> ClusterProfiles:
     return profiles
 
 
-@st.cache_resource(show_spinner="Memuat model dan profil klaster...")
+@lru_cache(maxsize=1)
 def load_artifacts() -> ArtifactBundle:
     """Load the pre-trained model assets once; never fit a model here."""
     paths = (SCALER_PATH, KMEANS_PATH, PCA_PATH, PROFILES_PATH)

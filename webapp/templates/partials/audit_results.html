@@ -1,0 +1,96 @@
+{% from "partials/stepper.html" import stepper %}
+<section id="audit-results" class="audit-results">
+  {{ stepper(current_step) }}
+  {% if error %}
+    <div class="alert alert-error" role="alert">
+      <strong>File belum bisa diproses.</strong>
+      <span>{{ error }}</span>
+    </div>
+  {% endif %}
+
+  {% if result %}
+    <section class="kpi-grid audit-kpis" aria-label="Ringkasan audit">
+      <article class="card kpi-card">
+        <span class="kpi-label">Berhasil diproses</span>
+        <strong class="kpi-value">{{ format_number(result.processed_count) }}</strong>
+        <span class="kpi-footnote">dari {{ format_number(result.total_count) }} baris data</span>
+      </article>
+      <article class="card kpi-card">
+        <span class="kpi-label">Ditolak</span>
+        <strong class="kpi-value">{{ format_number(result.rejected_count) }}</strong>
+        <span class="kpi-footnote">dengan alasan validasi</span>
+      </article>
+    </section>
+
+    {% if result.distribution %}
+      <article class="card chart-card">
+        <div class="chart-heading">
+          <h2>Distribusi persona dari baris yang berhasil diproses</h2>
+          <p>Jumlah hasil: {{ format_number(result.distribution_total) }}</p>
+        </div>
+        <div class="chart-wrap distribution-chart-wrap">
+          <canvas
+            data-chart="persona-distribution"
+            data-chart-payload="{{ result.distribution|tojson|forceescape }}"
+            role="img"
+            aria-label="Distribusi hasil audit menurut persona"
+          ></canvas>
+        </div>
+      </article>
+    {% endif %}
+
+    <section class="card table-card">
+      <div class="section-heading">
+        <div>
+          <h2>Hasil audit</h2>
+          <p>Menampilkan maksimal {{ format_number(result.row_limit) }} baris hasil pertama.</p>
+        </div>
+        {% if result.download_url %}
+          <a class="button button-primary" href="{{ result.download_url }}">Unduh hasil CSV</a>
+        {% endif %}
+      </div>
+      {% if result.display_rows %}
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                {% for column in result.display_rows[0].keys() %}<th>{{ column }}</th>{% endfor %}
+              </tr>
+            </thead>
+            <tbody>
+              {% for row in result.display_rows %}
+                <tr>
+                  {% for column, value in row.items() %}
+                    {% if column == "Risk_Level" %}
+                      <td><span class="risk-badge {% if value in ['Tinggi', 'Sangat Tinggi'] %}risk-high{% elif value == 'Sedang' %}risk-medium{% elif value == 'Rendah' %}risk-low{% else %}risk-neutral{% endif %}">{{ value }}</span></td>
+                    {% else %}
+                      <td>{{ value }}</td>
+                    {% endif %}
+                  {% endfor %}
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <p class="muted-copy">Tidak ada baris valid untuk ditampilkan atau diunduh.</p>
+      {% endif %}
+    </section>
+
+    {% if result.rejected_rows %}
+      <details class="card rejected-details">
+        <summary>Baris yang ditolak (menampilkan maksimal 100)</summary>
+        <div class="table-scroll">
+          <table>
+            <thead><tr>{% for column in result.rejected_rows[0].keys() %}<th>{{ column }}</th>{% endfor %}</tr></thead>
+            <tbody>
+              {% for row in result.rejected_rows %}
+                <tr>{% for value in row.values() %}<td>{{ value }}</td>{% endfor %}</tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </details>
+    {% endif %}
+  {% endif %}
+</section>

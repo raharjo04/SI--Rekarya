@@ -1,14 +1,14 @@
+from functools import lru_cache
 from pathlib import Path
 
 import pandas as pd
-import streamlit as st
 
 from core.config import DATASET_PATH
 from core.contracts import SummaryStats
 
 
-@st.cache_data(show_spinner="Memuat dataset SDM...")
-def load_dataset(path: Path = DATASET_PATH) -> pd.DataFrame:
+@lru_cache(maxsize=2)
+def _read_dataset(path: Path) -> pd.DataFrame:
     if not path.is_file():
         raise FileNotFoundError(
             f"Dataset tidak ditemukan: {path.name}. "
@@ -18,7 +18,10 @@ def load_dataset(path: Path = DATASET_PATH) -> pd.DataFrame:
     return pd.read_csv(path)
 
 
-@st.cache_data(show_spinner=False)
+def load_dataset(path: Path = DATASET_PATH) -> pd.DataFrame:
+    return _read_dataset(path).copy(deep=True)
+
+
 def summary_stats(dataframe: pd.DataFrame) -> SummaryStats:
     required = {
         "left",

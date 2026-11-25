@@ -1,8 +1,9 @@
 # SI-REKARYA
 
-Aplikasi analitik SDM berbasis Streamlit yang memuat model K-Means hasil
-pelatihan offline. Aplikasi tidak melatih ulang model dan tidak menggunakan
-REST API atau database.
+Aplikasi analitik SDM dengan UI custom FastAPI dan UI Streamlit lama yang masih
+dipertahankan selama migrasi. Keduanya menggunakan model K-Means hasil
+pelatihan offline; aplikasi web tidak melatih ulang model atau menggunakan
+database.
 
 ## Cara menjalankan (Windows)
 
@@ -35,14 +36,23 @@ New Terminal**. Jalankan langkah-langkah berikut di terminal itu.
    .\.venv\Scripts\python.exe train_pipeline.py
    ```
 
-6. Jalankan aplikasi:
+6. Jalankan UI FastAPI:
 
    ```powershell
-   .\.venv\Scripts\python.exe -m streamlit run app.py
+   .\.venv\Scripts\python.exe -m uvicorn webapp.main:app --reload
    ```
 
-7. Buka alamat yang muncul, biasanya `http://localhost:8501`. Untuk berhenti,
-   kembali ke terminal lalu tekan **Ctrl+C**.
+7. Buka `http://127.0.0.1:8000`. Untuk berhenti, kembali ke terminal lalu
+   tekan **Ctrl+C**.
+
+UI Streamlit lama tetap tersedia selama proses migrasi:
+
+```powershell
+.\.venv\Scripts\python.exe -m streamlit run app.py
+```
+
+Audit CSV menerima file maksimal 5 MB dan 20.000 baris data. Hasil unduhan audit
+disimpan sementara di memori selama 15 menit.
 
 Pipeline memakai `HR_comma_sep.csv` yang tersedia di root atau folder `data/`.
 Model K-Means dilatih offline dengan K=4; metrik evaluasi K=2 sampai K=8

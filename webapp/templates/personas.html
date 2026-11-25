@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block content %}
+  <div class="tabs" role="tablist" aria-label="Tampilan persona">
+    <button class="tab-button is-active" id="tab-personas" type="button" role="tab" aria-selected="true" aria-controls="panel-personas" data-tab="panel-personas">Persona karyawan</button>
+    <button class="tab-button" id="tab-map" type="button" role="tab" aria-selected="false" aria-controls="panel-map" data-tab="panel-map">Peta kemiripan</button>
+    <button class="tab-button" id="tab-technical" type="button" role="tab" aria-selected="false" aria-controls="panel-technical" data-tab="panel-technical">Detail teknis</button>
+  </div>
+
+  <section class="tab-panel is-active" id="panel-personas" role="tabpanel" aria-labelledby="tab-personas">
+    <div class="persona-grid">
+      {% for persona in personas %}
+        <article class="card persona-card" style="--persona-color: {{ persona.color }}">
+          <div class="persona-card-top">
+            <span class="persona-badge">{{ persona.persona }}</span>
+            <span class="risk-badge {{ persona.risk_class }}">{{ persona.risk_level }}</span>
+          </div>
+          <p class="persona-description">{{ persona.description }}</p>
+          <div class="persona-stats">
+            <div><strong>{{ format_percent(persona.percentage) }}</strong><span>bagian dari tim</span></div>
+            <div><strong>{{ format_percent(persona.turnover_percent) }}</strong><span>pernah keluar</span></div>
+            <div><strong>{{ format_number(persona.count) }}</strong><span>karyawan</span></div>
+          </div>
+          <p class="persona-benchmark">{{ persona.benchmark_note }}</p>
+          {% if persona.strategy %}
+            <details class="strategy-details">
+              <summary>Ide tindak lanjut HR</summary>
+              <ul>
+                {% for strategy in persona.strategy %}
+                  <li>{{ strategy }}</li>
+                {% endfor %}
+              </ul>
+            </details>
+          {% endif %}
+        </article>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section class="tab-panel" id="panel-map" role="tabpanel" aria-labelledby="tab-map" hidden>
+    <article class="card chart-card">
+      <div class="chart-heading">
+        <h2>Karyawan dengan pola kerja serupa tampak berdekatan</h2>
+        <p>Peta menunjukkan {{ format_number(map_count) }} dari {{ format_number(total_count) }} karyawan. Kedekatan adalah kemiripan pola, bukan peringkat kinerja.</p>
+      </div>
+      <div class="chart-wrap map-chart-wrap">
+        <canvas
+          data-chart="persona-map"
+          data-chart-payload="{{ map_chart|tojson|forceescape }}"
+          role="img"
+          aria-label="Peta kemiripan karyawan menurut persona"
+        ></canvas>
+      </div>
+      <div class="persona-legend">
+        {% for persona in personas %}
+          <span><i style="--persona-color: {{ persona.color }}"></i>{{ persona.persona }}</span>
+        {% endfor %}
+      </div>
+    </article>
+  </section>
+
+  <section class="tab-panel" id="panel-technical" role="tabpanel" aria-labelledby="tab-technical" hidden>
+    <article class="card technical-card">
+      <h2>Detail teknis model</h2>
+      <p class="technical-explanation">K adalah jumlah kelompok yang dibentuk model; varians menunjukkan seberapa banyak pola data tertangkap dalam peta dua dimensi.</p>
+      <div class="technical-metrics">
+        <div><span>Jumlah kelompok (K)</span><strong>{{ technical.optimal_k }}</strong></div>
+        <div><span>Informasi pada peta</span><strong>{{ format_percent(technical.explained_variance) }}</strong></div>
+      </div>
+      <p class="technical-explanation">Silhouette mengukur seberapa cocok anggota dengan kelompoknya; DBI menilai pemisahan antarkelompok; WCSS mengukur jarak anggota ke pusat kelompok. Nilai-nilai ini membantu mengevaluasi model, bukan menilai karyawan.</p>
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr><th>K</th><th>WCSS</th><th>Silhouette</th><th>DBI</th><th>Calinski-Harabasz</th></tr>
+          </thead>
+          <tbody>
+            {% for row in technical.evaluation %}
+              <tr {% if row.k == technical.optimal_k %}class="selected-row"{% endif %}>
+                <td>{{ row.k }}</td><td>{{ format_number(row.wcss, 2) }}</td><td>{{ format_number(row.silhouette, 3) }}</td><td>{{ format_number(row.dbi, 3) }}</td><td>{{ format_number(row.calinski_harabasz, 2) }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </article>
+  </section>
+{% endblock %}

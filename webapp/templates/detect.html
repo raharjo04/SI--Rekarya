@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block content %}
+  <section class="card form-card">
+    <div class="section-heading">
+      <div>
+        <h2>Masukkan karakteristik karyawan</h2>
+        <p>Isi indikator kerja dan karier untuk melihat pola kelompok yang paling serupa.</p>
+      </div>
+    </div>
+    <form
+      class="employee-form"
+      action="/detect"
+      method="post"
+      hx-post="/detect"
+      hx-target="#detection-result"
+      hx-swap="innerHTML"
+    >
+      <label>
+        Tingkat kepuasan
+        <input type="number" name="satisfaction_level" min="0" max="1" step="0.01" value="{{ values.satisfaction_level }}" required>
+        <small>Rentang 0 sampai 1</small>
+      </label>
+      <label>
+        Evaluasi terakhir
+        <input type="number" name="last_evaluation" min="0" max="1" step="0.01" value="{{ values.last_evaluation }}" required>
+        <small>Rentang 0 sampai 1</small>
+      </label>
+      <label>
+        Jumlah proyek
+        <input type="number" name="number_project" min="2" max="7" step="1" value="{{ values.number_project }}" required>
+        <small>Rentang 2 sampai 7 proyek</small>
+      </label>
+      <label>
+        Jam kerja bulanan
+        <input type="number" name="average_montly_hours" min="96" max="310" step="1" value="{{ values.average_montly_hours }}" required>
+        <small>Rentang 96 sampai 310 jam</small>
+      </label>
+      <label>
+        Masa kerja
+        <input type="number" name="time_spend_company" min="2" max="10" step="1" value="{{ values.time_spend_company }}" required>
+        <small>Rentang 2 sampai 10 tahun</small>
+      </label>
+      <label class="checkbox-field">
+        <input type="checkbox" name="promotion_last_5years" value="true" {% if values.promotion_last_5years %}checked{% endif %}>
+        <span>Promosi dalam 5 tahun terakhir</span>
+      </label>
+      <div class="form-actions">
+        <button class="button button-primary" type="submit">Jalankan analisis</button>
+        <span class="htmx-indicator" aria-live="polite">Menganalisis profil…</span>
+      </div>
+    </form>
+  </section>
+
+  <section id="detection-result" aria-live="polite">
+    {% if error %}
+      {% include "partials/error_message.html" %}
+    {% elif result %}
+      {% with profile=result.profile, recommendations=result.recommendations, policy_note=result.policy_note, triggered_rules=result.triggered_rules, warnings=result.warnings, comparison=result.comparison, map_chart=result.map_chart, persona_legend=result.persona_legend, technical=result.technical %}
+        {% include "partials/detection_result.html" %}
+      {% endwith %}
+    {% endif %}
+  </section>
+{% endblock %}

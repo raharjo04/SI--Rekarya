@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#1e3a8a">
+    <link rel="icon" type="image/svg+xml" href="{{ url_for('static', path='/favicon.svg') }}">
+    <title>{% block title %}{{ title }} · SI-REKARYA{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='/css/style.css') }}">
+    <script defer src="https://unpkg.com/htmx.org@2.0.4"></script>
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar" aria-label="Navigasi utama">
+        <a class="brand" href="/" aria-label="SI-REKARYA, halaman ringkasan">
+          <span class="brand-mark" aria-hidden="true">S</span>
+          <span>
+            <strong>SI-REKARYA</strong>
+            <small>Analitik retensi karyawan</small>
+          </span>
+        </a>
+        <nav class="primary-nav">
+          <a href="/" {% if request.url.path == '/' %}aria-current="page"{% endif %}>
+            <span class="nav-icon" aria-hidden="true">▦</span>Ringkasan SDM
+          </a>
+          <a href="/personas" {% if request.url.path == '/personas' %}aria-current="page"{% endif %}>
+            <span class="nav-icon" aria-hidden="true">◉</span>Persona &amp; Peta
+          </a>
+          <a href="/detect" {% if request.url.path == '/detect' %}aria-current="page"{% endif %}>
+            <span class="nav-icon" aria-hidden="true">⌕</span>Deteksi Karyawan
+          </a>
+          <a href="/audit" {% if request.url.path == '/audit' %}aria-current="page"{% endif %}>
+            <span class="nav-icon" aria-hidden="true">▤</span>Audit Data Massal
+          </a>
+        </nav>
+        <div class="sidebar-note">
+          <span class="eyebrow">Tentang data</span>
+          <p>Indikator kelompok membantu memahami pola, bukan memastikan keputusan individu.</p>
+        </div>
+      </aside>
+
+      <main class="main-content">
+        <header class="page-header">
+          <h1>{{ title }}</h1>
+          <p>{{ description }}</p>
+        </header>
+        <div class="page-content">
+          {% block content %}{% endblock %}
+        </div>
+      </main>
+    </div>
+    <script defer src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+    <script defer src="{{ url_for('static', path='/js/app.js') }}"></script>
+  </body>
+</html>

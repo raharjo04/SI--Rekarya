@@ -1,0 +1,81 @@
+<div class="result-stack">
+  <section class="card result-hero" style="--persona-color: {{ profile.color }}">
+    <div class="result-hero-top">
+      <div>
+        <span class="eyebrow">Kelompok paling serupa</span>
+        <h2>{{ profile.persona }}</h2>
+      </div>
+      <span class="risk-badge {{ profile.risk_class }}">{{ profile.risk_level }}</span>
+    </div>
+    <p class="historical-copy">Dari 100 karyawan serupa, sekitar <strong>{{ profile.historical_exits }}</strong> pernah keluar.</p>
+    <p class="caveat">Angka ini menggambarkan riwayat kelompok, bukan kepastian untuk seorang karyawan.</p>
+  </section>
+
+  {% if warnings %}
+    <div class="alert alert-warning" role="status">
+      {% for warning in warnings %}<p>{{ warning }}</p>{% endfor %}
+    </div>
+  {% endif %}
+
+  <section class="card recommendations-card">
+    <div class="section-heading">
+      <div>
+        <span class="eyebrow">Tindak lanjut yang bisa dipertimbangkan</span>
+        <h2>Rekomendasi HR — mulai dari yang paling relevan</h2>
+      </div>
+    </div>
+    {% if recommendations %}
+      <ol class="recommendation-list">
+        {% for recommendation in recommendations %}
+          <li><span>{{ loop.index }}</span><p>{{ recommendation }}</p></li>
+        {% endfor %}
+      </ol>
+    {% else %}
+      <p class="muted-copy">Belum ada rekomendasi khusus untuk pola ini.</p>
+    {% endif %}
+    <p class="chart-note">{{ policy_note }}</p>
+  </section>
+
+  <section class="card chart-card">
+    <div class="chart-heading">
+      <h2>Bagaimana profil ini dibandingkan dengan rata-rata kelompok?</h2>
+      <p>Untuk memudahkan perbandingan, rata-rata kelompok menjadi 100 pada setiap indikator.</p>
+    </div>
+    <div class="chart-wrap comparison-chart-wrap">
+      <canvas
+        data-chart="employee-comparison"
+        data-chart-payload="{{ comparison|tojson|forceescape }}"
+        role="img"
+        aria-label="Perbandingan karakteristik input dengan rata-rata kelompok"
+      ></canvas>
+    </div>
+  </section>
+
+  <details class="card position-details">
+    <summary>Lihat posisi pada peta kemiripan</summary>
+    <p class="chart-note">Bintang berbingkai putih menandai input karyawan pada peta.</p>
+    <div class="chart-wrap map-chart-wrap">
+      <canvas
+        data-chart="persona-map"
+        data-chart-payload="{{ map_chart|tojson|forceescape }}"
+        role="img"
+        aria-label="Posisi karyawan pada peta kemiripan kelompok"
+      ></canvas>
+    </div>
+    <div class="persona-legend">
+      {% for persona in persona_legend %}
+        <span><i style="--persona-color: {{ persona.color }}"></i>{{ persona.persona }}</span>
+      {% endfor %}
+      <span><i class="employee-legend-marker"></i>Karyawan yang dianalisis</span>
+    </div>
+  </details>
+
+  <details class="card technical-details">
+    <summary>Detail teknis</summary>
+    <p>Jarak ke pusat kelompok: <strong>{{ technical.distance }}</strong>. Nilai lebih kecil berarti profil lebih dekat ke pusat kelompok terpilih.</p>
+    <p>Skor kepuasan input: <strong>{{ technical.satisfaction }}</strong> pada skala 0 sampai 1.</p>
+    {% if triggered_rules %}
+      <p>Aturan rekomendasi yang aktif: {{ triggered_rules|join(", ") }}.</p>
+    {% endif %}
+  </details>
+</div>

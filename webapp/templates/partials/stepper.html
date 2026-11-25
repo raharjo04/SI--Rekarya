@@ -1,0 +1,9 @@
+{% macro stepper(active_step) %}
+  <ol class="stepper" aria-label="Tahapan audit">
+    {% for label in ["Siapkan file", "Unggah CSV", "Tinjau hasil"] %}
+      <li class="{% if active_step == loop.index %}is-active{% elif active_step > loop.index %}is-complete{% endif %}" {% if active_step == loop.index %}aria-current="step"{% endif %}>
+        <span>{{ loop.index }}</span>{{ label }}
+      </li>
+    {% endfor %}
+  </ol>
+{% endmacro %}
