@@ -1,9 +1,17 @@
 {% extends "base.html" %}
 {% block content %}
-  <section class="card error-card" role="alert">
-    <span class="eyebrow">Belum bisa dimuat</span>
-    <h2>{{ title }}</h2>
-    <p>{{ message }}</p>
-    <a class="button button-secondary" href="/">Kembali ke ringkasan</a>
-  </section>
+<div class="view-section max-w-xl mx-auto my-12">
+  <div class="bg-white rounded-2xl p-6 sm:p-8 border border-rose-200 shadow-xs text-center space-y-4">
+    <div class="w-14 h-14 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center mx-auto">
+      <svg class="w-8 h-8" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    </div>
+    <h2 class="text-xl font-extrabold text-slate-900">{{ title }}</h2>
+    <p class="text-sm text-slate-600 leading-relaxed">{{ message }}</p>
+    <div class="pt-2">
+      <a href="/" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#0f213a] text-white text-xs font-semibold hover:bg-[#163054] transition-colors shadow-xs">
+        Kembali ke Ringkasan SDM
+      </a>
+    </div>
+  </div>
+</div>
 {% endblock %}

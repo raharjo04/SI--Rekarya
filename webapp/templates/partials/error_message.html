@@ -1,4 +1,7 @@
-<div class="alert alert-error" role="alert">
-  <strong>Belum bisa diproses.</strong>
-  <span>{{ message }}</span>
+<div class="p-4 rounded-xl bg-rose-50 border border-rose-300 text-rose-800 text-xs space-y-1.5" role="alert">
+  <div class="flex items-center gap-2 font-bold text-rose-900 text-sm">
+    <svg class="w-4 h-4 text-rose-600 shrink-0" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    <span>Input belum dapat dianalisis</span>
+  </div>
+  <p class="leading-relaxed pl-6">{{ message }}</p>
 </div>

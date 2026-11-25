@@ -1,79 +1,175 @@
 {% extends "base.html" %}
 {% block content %}
-  <section class="kpi-grid" aria-label="Indikator utama">
-    <article class="card kpi-card">
-      <span class="kpi-label">Total karyawan</span>
-      <strong class="kpi-value">{{ total }}</strong>
-      <span class="kpi-footnote">tercatat dalam dataset</span>
-    </article>
-    <article class="card kpi-card">
-      <span class="kpi-label">Pernah keluar</span>
-      <strong class="kpi-value">{{ turnover }}</strong>
-      <span class="kpi-footnote">proporsi dari seluruh karyawan</span>
-    </article>
-    <article class="card kpi-card">
-      <span class="kpi-label">Rata-rata kepuasan</span>
-      <strong class="kpi-value">{{ satisfaction }}</strong>
-      <span class="kpi-footnote">skala 0 sampai 1</span>
-    </article>
-    <article class="card kpi-card">
-      <span class="kpi-label">Jam kerja rata-rata</span>
-      <strong class="kpi-value">{{ monthly_hours }}</strong>
-      <span class="kpi-footnote">per bulan</span>
-    </article>
-  </section>
+<div class="view-section space-y-6">
+  <!-- Subtitle Banner -->
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/80 shadow-xs">
+    <div>
+      <h2 class="text-base font-bold text-slate-900">Ikhtisar Kesehatan Organisasi &amp; Dinamika Turnover</h2>
+      <p class="text-sm text-slate-500 mt-0.5">Gambaran tenaga kerja, pola beban kerja, dan risiko karyawan keluar.</p>
+    </div>
+    <div class="flex items-center gap-2 text-xs font-medium text-slate-600 bg-slate-100 px-3 py-1.5 rounded-xl self-start sm:self-auto">
+      <span class="w-2 h-2 rounded-full bg-teal-600"></span>
+      <span>Benchmark Turnover: <strong class="tabular-nums text-slate-900">{{ turnover }}</strong></span>
+    </div>
+  </div>
 
-  <section class="card findings-card">
-    <div class="section-heading">
-      <div>
-        <span class="eyebrow">Dihitung dari dataset</span>
-        <h2>Temuan utama</h2>
+  <!-- 4 Kartu KPI Utama -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-5">
+    <!-- KPI 1 -->
+    <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs hover:border-teal-300 transition-colors">
+      <div class="flex items-center justify-between">
+        <span class="text-xs font-semibold uppercase tracking-wider text-slate-500">Total Karyawan</span>
+        <div class="w-9 h-9 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        </div>
+      </div>
+      <div class="mt-3 flex items-baseline gap-2">
+        <span class="text-3xl font-extrabold text-slate-900 tabular-nums tracking-tight">{{ total }}</span>
+        <span class="text-xs font-medium text-slate-500">orang</span>
+      </div>
+      <p class="mt-2 text-xs text-slate-500">tercatat dalam dataset historis</p>
+    </div>
+
+    <!-- KPI 2 -->
+    <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs hover:border-rose-300 transition-colors">
+      <div class="flex items-center justify-between">
+        <span class="text-xs font-semibold uppercase tracking-wider text-slate-500">Proporsi Keluar / Turnover</span>
+        <div class="w-9 h-9 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+        </div>
+      </div>
+      <div class="mt-3 flex items-baseline gap-2">
+        <span class="text-3xl font-extrabold text-rose-600 tabular-nums tracking-tight">{{ turnover }}</span>
+        <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-rose-50 text-rose-700 border border-rose-200">Perlu Perhatian</span>
+      </div>
+      <p class="mt-2 text-xs text-slate-500">Garis acuan rata-rata seluruh departemen</p>
+    </div>
+
+    <!-- KPI 3 -->
+    <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs hover:border-teal-300 transition-colors">
+      <div class="flex items-center justify-between">
+        <span class="text-xs font-semibold uppercase tracking-wider text-slate-500">Rata-rata Kepuasan</span>
+        <div class="w-9 h-9 rounded-xl bg-teal-50 text-teal-600 flex items-center justify-center">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
+        </div>
+      </div>
+      <div class="mt-3 flex items-baseline gap-2">
+        <span class="text-3xl font-extrabold text-slate-900 tabular-nums tracking-tight">{{ satisfaction }}</span>
+        <span class="text-xs font-medium text-slate-500">skala 0 sampai 1</span>
+      </div>
+      <div class="mt-2.5 w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
+        <div class="bg-teal-500 h-full rounded-full" style="width: {{ (satisfaction|float * 100)|round }}%"></div>
       </div>
     </div>
-    <ul class="findings-list">
+
+    <!-- KPI 4 -->
+    <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs hover:border-amber-300 transition-colors">
+      <div class="flex items-center justify-between">
+        <span class="text-xs font-semibold uppercase tracking-wider text-slate-500">Jam Kerja Rata-rata</span>
+        <div class="w-9 h-9 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        </div>
+      </div>
+      <div class="mt-3 flex items-baseline gap-2">
+        <span class="text-3xl font-extrabold text-slate-900 tabular-nums tracking-tight">{{ monthly_hours }}</span>
+        <span class="text-xs font-medium text-slate-500">per bulan</span>
+      </div>
+      <p class="mt-2 text-xs text-slate-500">Di atas ambang standar kerja normal (160 jam)</p>
+    </div>
+  </div>
+
+  <!-- 2 Grafik Chart.js Berdampingan -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <!-- Bubble Chart -->
+    <div class="bg-white rounded-2xl p-5 sm:p-6 border border-slate-200/80 shadow-xs flex flex-col justify-between">
+      <div>
+        <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-2 mb-3">
+          <div>
+            <h3 class="text-base font-bold text-slate-900">{{ workload_summary.exit_rate }} karyawan di area beban tinggi dan kepuasan rendah pernah keluar</h3>
+            <p class="text-xs text-slate-500 mt-0.5">Gelembung merangkum rentang jam kerja dan kepuasan; ukurannya menunjukkan jumlah karyawan dan warnanya menunjukkan tingkat keluar.</p>
+          </div>
+          <span class="text-[11px] font-medium px-2.5 py-1 rounded-lg bg-slate-100 text-slate-600 shrink-0">Hover untuk detail</span>
+        </div>
+        <div class="chart-box h-72 sm:h-80">
+          <canvas
+            data-chart="workload-bubbles"
+            data-chart-payload="{{ workload_chart|tojson|forceescape }}"
+            role="img"
+            aria-label="Gelembung jumlah karyawan dan tingkat keluar menurut jam kerja dan kepuasan"
+          ></canvas>
+        </div>
+      </div>
+      <div class="mt-4 pt-4 border-t border-slate-100 space-y-2">
+        <div class="flex flex-wrap items-center gap-3 text-xs text-slate-600" aria-label="Arti warna dan ukuran gelembung">
+          <span class="inline-flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-teal-600"></span> Keluar &le;15%</span>
+          <span class="inline-flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-amber-500"></span> Keluar 15–30%</span>
+          <span class="inline-flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-rose-600"></span> Keluar &gt;30%</span>
+          <span class="inline-flex items-center gap-1.5 text-slate-400">&bull; Gelembung lebih besar = lebih banyak karyawan</span>
+        </div>
+        <p class="text-xs text-slate-500 leading-relaxed">
+          Area di atas 250 jam dan di bawah kepuasan 0,40 berisi {{ format_number(workload_summary.count) }} karyawan; {{ workload_summary.exit_rate }} pernah keluar. Rata-rata seluruh data: {{ workload_summary.overall_rate }}. Pola ini bukan penilaian individu.
+        </p>
+      </div>
+    </div>
+
+    <!-- Bar Chart -->
+    <div class="bg-white rounded-2xl p-5 sm:p-6 border border-slate-200/80 shadow-xs flex flex-col justify-between">
+      <div>
+        <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-2 mb-3">
+          <div>
+            <h3 class="text-base font-bold text-slate-900">{{ project_heading }}</h3>
+            <p class="text-xs text-slate-500 mt-0.5">Persentase karyawan yang pernah keluar menurut jumlah proyek. Label tiap bar menunjukkan jumlah karyawan (n).</p>
+          </div>
+          <span class="inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1 rounded-lg bg-rose-50 text-rose-700 border border-rose-200 shrink-0">
+            <span class="w-3 h-0.5 bg-rose-600 inline-block"></span> Rata-rata: {{ format_percent(project_chart.overall_rate) }}
+          </span>
+        </div>
+        <div class="chart-box h-72 sm:h-80">
+          <canvas
+            data-chart="project-turnover"
+            data-chart-payload="{{ project_chart|tojson|forceescape }}"
+            role="img"
+            aria-label="Persentase karyawan yang pernah keluar menurut jumlah proyek"
+          ></canvas>
+        </div>
+      </div>
+      <div class="mt-4 pt-4 border-t border-slate-100">
+        <p class="text-xs text-slate-500 leading-relaxed">
+          Bar merah menunjukkan tingkat keluar di atas 30%; teal menunjukkan 30% atau kurang. Garis putus-putus menandai rata-rata seluruh karyawan ({{ format_percent(project_chart.overall_rate) }}).
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Panel Temuan Utama (Key Findings) -->
+  <div class="bg-white rounded-2xl p-5 sm:p-6 border border-slate-200/80 shadow-xs">
+    <div class="flex items-center gap-2.5 mb-4">
+      <div class="w-8 h-8 rounded-lg bg-[#0f213a] text-teal-400 flex items-center justify-center">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 1 7 7c0 2.38-1.19 4.47-3 5.74V17a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1v-2.26C6.19 13.47 5 11.38 5 9a7 7 0 0 1 7-7z"/></svg>
+      </div>
+      <div>
+        <h3 class="text-base font-bold text-slate-900">Temuan utama</h3>
+        <p class="text-xs text-slate-500">Insight analitik utama yang dihitung langsung dari pola perilaku dataset</p>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
       {% for insight in insights %}
-        <li><span class="finding-marker" aria-hidden="true">{{ loop.index }}</span>{{ insight }}</li>
+        {% set colors = [
+          ('bg-rose-50/60', 'border-rose-200/80', 'bg-rose-600'),
+          ('bg-amber-50/60', 'border-amber-200/80', 'bg-amber-600'),
+          ('bg-teal-50/60', 'border-teal-200/80', 'bg-teal-600'),
+          ('bg-slate-50', 'border-slate-200/80', 'bg-[#0f213a]')
+        ] %}
+        {% set c = colors[loop.index0 % 4] %}
+        <div class="p-4 rounded-xl {{ c[0] }} border {{ c[1] }} flex gap-3.5">
+          <span class="w-7 h-7 rounded-lg {{ c[2] }} text-white font-bold text-xs flex items-center justify-center shrink-0 tabular-nums">0{{ loop.index }}</span>
+          <div>
+            <p class="text-xs text-slate-700 leading-relaxed font-medium">{{ insight }}</p>
+          </div>
+        </div>
       {% endfor %}
-    </ul>
-  </section>
-
-  <section class="chart-grid">
-    <article class="card chart-card">
-      <div class="chart-heading">
-        <h2>{{ workload_summary.exit_rate }} karyawan di area beban tinggi dan kepuasan rendah pernah keluar</h2>
-        <p>Gelembung merangkum rentang jam kerja dan kepuasan; ukurannya menunjukkan jumlah karyawan dan warnanya menunjukkan tingkat keluar.</p>
-      </div>
-      <div class="chart-wrap">
-        <canvas
-          data-chart="workload-bubbles"
-          data-chart-payload="{{ workload_chart|tojson|forceescape }}"
-          role="img"
-          aria-label="Gelembung jumlah karyawan dan tingkat keluar menurut jam kerja dan kepuasan"
-        ></canvas>
-      </div>
-      <div class="bubble-legend" aria-label="Arti warna dan ukuran gelembung">
-        <span><i class="bubble-swatch bubble-low"></i>Keluar ≤15%</span>
-        <span><i class="bubble-swatch bubble-medium"></i>Keluar 15–30%</span>
-        <span><i class="bubble-swatch bubble-high"></i>Keluar &gt;30%</span>
-        <span><i class="bubble-size-key"></i>Gelembung lebih besar = lebih banyak karyawan</span>
-      </div>
-      <p class="chart-note">Area di atas 250 jam dan di bawah kepuasan 0,40 berisi {{ format_number(workload_summary.count) }} karyawan; {{ workload_summary.exit_rate }} pernah keluar. Rata-rata seluruh data: {{ workload_summary.overall_rate }}. Pola ini bukan penilaian individu.</p>
-    </article>
-
-    <article class="card chart-card">
-      <div class="chart-heading">
-        <h2>{{ project_heading }}</h2>
-        <p>Label tiap bar menunjukkan jumlah karyawan (n); garis putus-putus menandai rata-rata seluruh karyawan ({{ format_percent(project_chart.overall_rate) }}).</p>
-      </div>
-      <div class="chart-wrap project-chart-wrap">
-        <canvas
-          data-chart="project-turnover"
-          data-chart-payload="{{ project_chart|tojson|forceescape }}"
-          role="img"
-          aria-label="Persentase karyawan yang pernah keluar menurut jumlah proyek"
-        ></canvas>
-      </div>
-      <p class="chart-note">Bar merah menunjukkan tingkat keluar di atas 30%; teal menunjukkan 30% atau kurang.</p>
-    </article>
-  </section>
+    </div>
+  </div>
+</div>
 {% endblock %}

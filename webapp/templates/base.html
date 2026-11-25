@@ -3,52 +3,168 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="theme-color" content="#1e3a8a">
+    <meta name="theme-color" content="#0f213a">
     <link rel="icon" type="image/svg+xml" href="{{ url_for('static', path='/favicon.svg') }}">
     <title>{% block title %}{{ title }} · SI-REKARYA{% endblock %}</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <!-- Custom Styles -->
     <link rel="stylesheet" href="{{ url_for('static', path='/css/style.css') }}">
+    <!-- HTMX -->
     <script defer src="https://unpkg.com/htmx.org@2.0.4"></script>
   </head>
-  <body>
-    <div class="app-shell">
-      <aside class="sidebar" aria-label="Navigasi utama">
-        <a class="brand" href="/" aria-label="SI-REKARYA, halaman ringkasan">
-          <span class="brand-mark" aria-hidden="true">S</span>
-          <span>
-            <strong>SI-REKARYA</strong>
-            <small>Analitik retensi karyawan</small>
-          </span>
-        </a>
-        <nav class="primary-nav">
-          <a href="/" {% if request.url.path == '/' %}aria-current="page"{% endif %}>
-            <span class="nav-icon" aria-hidden="true">▦</span>Ringkasan SDM
-          </a>
-          <a href="/personas" {% if request.url.path == '/personas' %}aria-current="page"{% endif %}>
-            <span class="nav-icon" aria-hidden="true">◉</span>Persona &amp; Peta
-          </a>
-          <a href="/detect" {% if request.url.path == '/detect' %}aria-current="page"{% endif %}>
-            <span class="nav-icon" aria-hidden="true">⌕</span>Deteksi Karyawan
-          </a>
-          <a href="/audit" {% if request.url.path == '/audit' %}aria-current="page"{% endif %}>
-            <span class="nav-icon" aria-hidden="true">▤</span>Audit Data Massal
-          </a>
-        </nav>
-        <div class="sidebar-note">
-          <span class="eyebrow">Tentang data</span>
-          <p>Indikator kelompok membantu memahami pola, bukan memastikan keputusan individu.</p>
+  <body class="antialiased selection:bg-teal-100 selection:text-teal-900 bg-[#f4f7fa] text-slate-900">
+
+    <!-- Mobile Sidebar Backdrop -->
+    <div id="sidebarBackdrop" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-30 hidden lg:hidden" onclick="toggleSidebar(false)"></div>
+
+    <div class="min-h-screen flex">
+      <!-- ==================== SIDEBAR NAVIGASI KIRI ==================== -->
+      <aside id="sidebar" class="sidebar-drawer fixed lg:sticky top-0 left-0 z-40 h-screen w-72 bg-[#0f213a] text-slate-300 flex flex-col justify-between shrink-0 -translate-x-full lg:translate-x-0 shadow-xl lg:shadow-none" aria-label="Navigasi Utama">
+        <div>
+          <!-- Brand Header -->
+          <div class="px-6 py-5 border-b border-slate-700/60 flex items-center justify-between">
+            <a href="/" class="flex items-center gap-3 group text-left" aria-label="SI-REKARYA Halaman Utama">
+              <!-- Custom SVG Logo -->
+              <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-teal-400 to-teal-600 flex items-center justify-center shadow-lg shadow-teal-950/50 shrink-0">
+                <svg class="w-6 h-6 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+                  <circle cx="9" cy="7" r="4"/>
+                  <polyline points="16 11 18 13 22 9"/>
+                </svg>
+              </div>
+              <div>
+                <span class="text-white font-extrabold tracking-tight text-lg leading-none block">SI-REKARYA</span>
+                <p class="text-[11px] text-slate-400 mt-1 leading-snug">Sistem Retensi dan Klasterisasi Karyawan</p>
+              </div>
+            </a>
+            <button class="lg:hidden p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800" onclick="toggleSidebar(false)" aria-label="Tutup Menu">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+          </div>
+
+          <!-- Menu Label -->
+          <div class="px-6 pt-6 pb-2">
+            <p class="text-[11px] font-semibold uppercase tracking-wider text-slate-400/80">Modul Utama</p>
+          </div>
+
+          <!-- Navigation Links -->
+          <nav class="px-3 space-y-1" aria-label="Menu Utama">
+            <a href="/" class="nav-item {% if request.url.path == '/' %}active{% endif %} w-full flex items-center gap-3 px-3.5 py-3 rounded-r-xl text-sm font-medium transition-colors hover:bg-slate-800/60 hover:text-white text-left" {% if request.url.path == '/' %}aria-current="page"{% endif %}>
+              <svg class="w-5 h-5 text-teal-400 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/>
+                <rect x="14" y="14" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/>
+              </svg>
+              <div class="flex-1">
+                <div class="leading-tight">Ringkasan SDM</div>
+                <div class="text-[11px] text-slate-400 font-normal mt-0.5">KPI &amp; Tren Makro</div>
+              </div>
+              <span class="text-[10px] font-mono text-slate-500">/</span>
+            </a>
+
+            <a href="/personas" class="nav-item {% if request.url.path == '/personas' %}active{% endif %} w-full flex items-center gap-3 px-3.5 py-3 rounded-r-xl text-sm font-medium transition-colors hover:bg-slate-800/60 hover:text-white text-left" {% if request.url.path == '/personas' %}aria-current="page"{% endif %}>
+              <svg class="w-5 h-5 text-teal-400 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="3"/><circle cx="19" cy="5" r="2"/><circle cx="5" cy="19" r="2"/>
+                <circle cx="5" cy="6" r="2"/><circle cx="19" cy="18" r="2"/>
+                <path d="M14.5 9.5 17.5 6.5M6.5 17.5l3-3M6.5 7.5l3 3M14.5 14.5l3 2.5"/>
+              </svg>
+              <div class="flex-1">
+                <div class="leading-tight">Persona &amp; Peta Klaster</div>
+                <div class="text-[11px] text-slate-400 font-normal mt-0.5">Segmentasi K-Means &amp; PCA</div>
+              </div>
+              <span class="text-[10px] font-mono text-slate-500">/personas</span>
+            </a>
+
+            <a href="/detect" class="nav-item {% if request.url.path == '/detect' %}active{% endif %} w-full flex items-center gap-3 px-3.5 py-3 rounded-r-xl text-sm font-medium transition-colors hover:bg-slate-800/60 hover:text-white text-left" {% if request.url.path == '/detect' %}aria-current="page"{% endif %}>
+              <svg class="w-5 h-5 text-teal-400 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/><path d="M11 8v6M8 11h6"/>
+              </svg>
+              <div class="flex-1">
+                <div class="leading-tight">Deteksi Karyawan</div>
+                <div class="text-[11px] text-slate-400 font-normal mt-0.5">Prediksi &amp; Rekomendasi HR</div>
+              </div>
+              <span class="text-[10px] font-mono text-slate-500">/detect</span>
+            </a>
+
+            <a href="/audit" class="nav-item {% if request.url.path == '/audit' %}active{% endif %} w-full flex items-center gap-3 px-3.5 py-3 rounded-r-xl text-sm font-medium transition-colors hover:bg-slate-800/60 hover:text-white text-left" {% if request.url.path == '/audit' %}aria-current="page"{% endif %}>
+              <svg class="w-5 h-5 text-teal-400 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                <polyline points="14 2 14 8 20 8"/><path d="M9 15l2 2 4-4"/>
+              </svg>
+              <div class="flex-1">
+                <div class="leading-tight">Audit Data Massal</div>
+                <div class="text-[11px] text-slate-400 font-normal mt-0.5">Validasi &amp; Skoring CSV</div>
+              </div>
+              <span class="text-[10px] font-mono text-slate-500">/audit</span>
+            </a>
+          </nav>
+        </div>
+
+        <!-- Sidebar Footer: Model & Dataset Context -->
+        <div class="p-4 m-3 rounded-xl bg-slate-900/70 border border-slate-700/60">
+          <div class="flex items-center justify-between text-xs mb-2">
+            <span class="text-slate-400 font-medium">Status Model Klaster</span>
+            <span class="inline-flex items-center gap-1.5 text-teal-400 font-semibold">
+              <span class="w-2 h-2 rounded-full bg-teal-400 animate-pulse"></span> Aktif (K=4)
+            </span>
+          </div>
+          <div class="text-[11px] text-slate-400 space-y-1 tabular-nums">
+            <div class="flex justify-between"><span>Dataset Baseline:</span><span class="text-slate-200 font-medium">14.999 baris</span></div>
+            <div class="flex justify-between"><span>Silhouette Score:</span><span class="text-slate-200 font-medium">0.462</span></div>
+            <div class="flex justify-between"><span>Engine UI:</span><span class="text-slate-200 font-medium">FastAPI + HTMX</span></div>
+          </div>
         </div>
       </aside>
 
-      <main class="main-content">
-        <header class="page-header">
-          <h1>{{ title }}</h1>
-          <p>{{ description }}</p>
+      <!-- ==================== MAIN CONTENT SHELL ==================== -->
+      <div class="flex-1 flex flex-col min-w-0">
+        <!-- Top Header Bar -->
+        <header class="sticky top-0 z-20 bg-white/90 backdrop-blur-md border-b border-slate-200/80 px-4 sm:px-8 py-3.5 flex items-center justify-between gap-4">
+          <div class="flex items-center gap-3 min-w-0">
+            <button onclick="toggleSidebar(true)" class="lg:hidden p-2 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-100" aria-label="Buka Navigasi">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
+            </button>
+            <div class="min-w-0">
+              <div class="flex items-center gap-2 text-xs text-slate-500">
+                <span>SI-REKARYA</span>
+                <span>/</span>
+                <span class="font-mono text-teal-700 bg-teal-50 px-1.5 py-0.5 rounded font-medium">{{ request.url.path }}</span>
+              </div>
+              <h1 class="text-lg sm:text-xl font-bold text-slate-900 truncate mt-0.5">{{ title }}</h1>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2.5 shrink-0">
+            <!-- HTMX Async Activity Indicator -->
+            <div id="htmxIndicator" class="hidden items-center gap-2 px-3 py-1.5 rounded-full bg-teal-50 border border-teal-200 text-teal-700 text-xs font-medium">
+              <svg class="w-3.5 h-3.5 animate-spin" viewBox="0 0 24 24" fill="none">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+              </svg>
+              <span>Memproses HTMX...</span>
+            </div>
+
+            {% if request.url.path != '/detect' %}
+              <a href="/detect" class="hidden sm:inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-[#0f213a] hover:bg-[#163054] text-white text-xs font-semibold transition-colors shadow-xs">
+                <svg class="w-4 h-4 text-teal-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+                <span>Cek Risiko Individu</span>
+              </a>
+            {% endif %}
+          </div>
         </header>
-        <div class="page-content">
+
+        <!-- Dynamic Page Container -->
+        <main class="flex-1 p-4 sm:p-8 max-w-[1440px] w-full mx-auto">
           {% block content %}{% endblock %}
-        </div>
-      </main>
+        </main>
+      </div>
     </div>
+
+    <!-- Chart.js and App JS -->
     <script defer src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
     <script defer src="{{ url_for('static', path='/js/app.js') }}"></script>
   </body>

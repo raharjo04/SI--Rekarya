@@ -1,81 +1,121 @@
-<div class="result-stack">
-  <section class="card result-hero" style="--persona-color: {{ profile.color }}">
-    <div class="result-hero-top">
+<div class="result-stack space-y-6">
+  <!-- Header Kartu Hasil Analisis -->
+  <div class="bg-white rounded-2xl p-5 sm:p-6 border-2 shadow-xs" style="border-color: {{ profile.color }}">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-100">
       <div>
-        <span class="eyebrow">Kelompok paling serupa</span>
-        <h2>{{ profile.persona }}</h2>
+        <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Kelompok paling serupa</span>
+        <div class="flex items-center gap-2.5 mt-1">
+          <h2 class="text-2xl font-extrabold text-slate-900">{{ profile.persona }}</h2>
+          <span class="px-3 py-1 rounded-full text-xs font-bold border {{ profile.risk_class }}">{{ profile.risk_level }}</span>
+        </div>
       </div>
-      <span class="risk-badge {{ profile.risk_class }}">{{ profile.risk_level }}</span>
+      <div class="text-left sm:text-right tabular-nums">
+        <span class="text-[11px] text-slate-400 block">Riwayat Keluar Kelompok</span>
+        <span class="text-xl font-extrabold" style="color: {{ profile.color }}">{{ profile.historical_exits }}%</span>
+      </div>
     </div>
-    <p class="historical-copy">Dari 100 karyawan serupa, sekitar <strong>{{ profile.historical_exits }}</strong> pernah keluar.</p>
-    <p class="caveat">Angka ini menggambarkan riwayat kelompok, bukan kepastian untuk seorang karyawan.</p>
-  </section>
+
+    <div class="mt-3">
+      <p class="text-xs text-slate-700 font-medium">Dari 100 karyawan serupa, sekitar <strong>{{ profile.historical_exits }}</strong> pernah keluar.</p>
+      <p class="text-[11px] text-slate-400 mt-0.5">Angka ini menggambarkan riwayat kelompok, bukan kepastian untuk seorang karyawan.</p>
+    </div>
+  </div>
 
   {% if warnings %}
-    <div class="alert alert-warning" role="status">
-      {% for warning in warnings %}<p>{{ warning }}</p>{% endfor %}
+    <div class="p-4 rounded-xl bg-amber-50 border border-amber-300 text-amber-800 text-xs space-y-1" role="status">
+      {% for warning in warnings %}
+        <p class="leading-relaxed">{{ warning }}</p>
+      {% endfor %}
     </div>
   {% endif %}
 
-  <section class="card recommendations-card">
-    <div class="section-heading">
+  <!-- Rekomendasi HR Bertingkat -->
+  <div class="bg-white rounded-2xl p-5 sm:p-6 border border-slate-200/80 shadow-xs space-y-4">
+    <div>
+      <span class="text-[11px] font-bold uppercase tracking-wider text-teal-700 bg-teal-50 px-2.5 py-0.5 rounded-md">Tindak lanjut</span>
+      <h3 class="text-base font-bold text-slate-900 mt-2">Rekomendasi HR — mulai dari yang paling relevan</h3>
+    </div>
+
+    {% if recommendations %}
+      <div class="space-y-2.5 text-xs">
+        {% for recommendation in recommendations %}
+          <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200/70 flex items-start gap-3">
+            <span class="w-6 h-6 rounded-lg bg-[#0f213a] text-white font-bold text-[11px] flex items-center justify-center shrink-0 tabular-nums">{{ loop.index }}</span>
+            <p class="text-slate-700 leading-relaxed font-medium pt-0.5">{{ recommendation }}</p>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p class="text-xs text-slate-500">Belum ada rekomendasi khusus untuk pola ini.</p>
+    {% endif %}
+
+    {% if policy_note %}
+      <p class="text-[11px] text-slate-400 pt-2 border-t border-slate-100 leading-relaxed">{{ policy_note }}</p>
+    {% endif %}
+  </div>
+
+  <!-- 2 Visualisasi: Comparison Chart & PCA Position -->
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <!-- Comparison Chart -->
+    <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs flex flex-col justify-between">
       <div>
-        <span class="eyebrow">Tindak lanjut yang bisa dipertimbangkan</span>
-        <h2>Rekomendasi HR — mulai dari yang paling relevan</h2>
+        <h3 class="text-sm font-bold text-slate-900">Perbandingan dengan rata-rata kelompok</h3>
+        <p class="text-[11px] text-slate-500 mt-0.5 mb-3">Untuk memudahkan perbandingan, rata-rata kelompok menjadi 100 pada setiap indikator.</p>
+        <div class="chart-box h-60">
+          <canvas
+            data-chart="employee-comparison"
+            data-chart-payload="{{ comparison|tojson|forceescape }}"
+            role="img"
+            aria-label="Perbandingan karakteristik input dengan rata-rata kelompok"
+          ></canvas>
+        </div>
       </div>
     </div>
-    {% if recommendations %}
-      <ol class="recommendation-list">
-        {% for recommendation in recommendations %}
-          <li><span>{{ loop.index }}</span><p>{{ recommendation }}</p></li>
+
+    <!-- Posisi pada Peta Klaster -->
+    <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs flex flex-col justify-between">
+      <div>
+        <h3 class="text-sm font-bold text-slate-900">Posisi pada peta kemiripan</h3>
+        <p class="text-[11px] text-slate-500 mt-0.5 mb-3">Tanda bintang menandai input karyawan pada peta.</p>
+        <div class="chart-box h-60">
+          <canvas
+            data-chart="persona-map"
+            data-chart-payload="{{ map_chart|tojson|forceescape }}"
+            role="img"
+            aria-label="Posisi karyawan pada peta kemiripan kelompok"
+          ></canvas>
+        </div>
+      </div>
+      <div class="flex flex-wrap items-center gap-2 pt-3 border-t border-slate-100 text-[11px] text-slate-600">
+        {% for persona in persona_legend %}
+          <span class="inline-flex items-center gap-1">
+            <span class="w-2.5 h-2.5 rounded-full" style="background-color: {{ persona.color }}"></span>
+            {{ persona.persona }}
+          </span>
         {% endfor %}
-      </ol>
-    {% else %}
-      <p class="muted-copy">Belum ada rekomendasi khusus untuk pola ini.</p>
-    {% endif %}
-    <p class="chart-note">{{ policy_note }}</p>
-  </section>
+      </div>
+    </div>
+  </div>
 
-  <section class="card chart-card">
-    <div class="chart-heading">
-      <h2>Bagaimana profil ini dibandingkan dengan rata-rata kelompok?</h2>
-      <p>Untuk memudahkan perbandingan, rata-rata kelompok menjadi 100 pada setiap indikator.</p>
+  <!-- Detail Teknis Jarak Euclidean -->
+  <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs space-y-3">
+    <h3 class="text-sm font-bold text-slate-900">Detail teknis model</h3>
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 tabular-nums">
+      <div class="p-3 rounded-xl bg-slate-50 border border-slate-200">
+        <span class="text-[11px] text-slate-500 block">Jarak ke pusat kelompok</span>
+        <strong class="text-base font-extrabold text-slate-900 mt-0.5 block">d = {{ technical.distance }}</strong>
+        <span class="text-[10px] text-slate-400">Nilai lebih kecil berarti lebih dekat</span>
+      </div>
+      <div class="p-3 rounded-xl bg-slate-50 border border-slate-200">
+        <span class="text-[11px] text-slate-500 block">Skor kepuasan input</span>
+        <strong class="text-base font-extrabold text-slate-900 mt-0.5 block">{{ technical.satisfaction }}</strong>
+        <span class="text-[10px] text-slate-400">Skala 0.00 sampai 1.00</span>
+      </div>
     </div>
-    <div class="chart-wrap comparison-chart-wrap">
-      <canvas
-        data-chart="employee-comparison"
-        data-chart-payload="{{ comparison|tojson|forceescape }}"
-        role="img"
-        aria-label="Perbandingan karakteristik input dengan rata-rata kelompok"
-      ></canvas>
-    </div>
-  </section>
-
-  <details class="card position-details">
-    <summary>Lihat posisi pada peta kemiripan</summary>
-    <p class="chart-note">Bintang berbingkai putih menandai input karyawan pada peta.</p>
-    <div class="chart-wrap map-chart-wrap">
-      <canvas
-        data-chart="persona-map"
-        data-chart-payload="{{ map_chart|tojson|forceescape }}"
-        role="img"
-        aria-label="Posisi karyawan pada peta kemiripan kelompok"
-      ></canvas>
-    </div>
-    <div class="persona-legend">
-      {% for persona in persona_legend %}
-        <span><i style="--persona-color: {{ persona.color }}"></i>{{ persona.persona }}</span>
-      {% endfor %}
-      <span><i class="employee-legend-marker"></i>Karyawan yang dianalisis</span>
-    </div>
-  </details>
-
-  <details class="card technical-details">
-    <summary>Detail teknis</summary>
-    <p>Jarak ke pusat kelompok: <strong>{{ technical.distance }}</strong>. Nilai lebih kecil berarti profil lebih dekat ke pusat kelompok terpilih.</p>
-    <p>Skor kepuasan input: <strong>{{ technical.satisfaction }}</strong> pada skala 0 sampai 1.</p>
     {% if triggered_rules %}
-      <p>Aturan rekomendasi yang aktif: {{ triggered_rules|join(", ") }}.</p>
+      <div class="text-[11px] text-slate-500 pt-1">
+        <span>Aturan rekomendasi yang aktif: <strong>{{ triggered_rules|join(", ") }}</strong>.</span>
+      </div>
     {% endif %}
-  </details>
+  </div>
 </div>

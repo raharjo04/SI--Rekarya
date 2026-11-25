@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% block content %}
+<div class="view-section space-y-6">
   {% if result or error %}
     {% include "partials/audit_results.html" %}
   {% else %}
@@ -9,23 +10,46 @@
     </section>
   {% endif %}
 
-  <div class="audit-grid">
-    <section class="card audit-step-card">
-      <span class="eyebrow">Langkah 1</span>
-      <h2>Siapkan file CSV</h2>
-      <p>Gunakan lima kolom fitur berikut. Data contoh hanya untuk menunjukkan format.</p>
-      <pre class="csv-example"><code>satisfaction_level,last_evaluation,number_project,average_montly_hours,time_spend_company
-0.72,0.81,4,201,3
-0.38,0.64,6,258,5</code></pre>
-      <a class="button button-secondary button-full" href="/audit/template.csv">Unduh template CSV</a>
-    </section>
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+    <!-- Kartu Template (Langkah 1) -->
+    <div class="lg:col-span-5 bg-white rounded-2xl p-5 sm:p-6 border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-4">
+      <div>
+        <span class="text-[11px] font-bold uppercase tracking-wider text-teal-700 bg-teal-50 px-2.5 py-1 rounded-md">Langkah 1</span>
+        <h3 class="text-base font-bold text-slate-900 mt-3">Siapkan file CSV</h3>
+        <p class="text-xs text-slate-600 mt-1.5 leading-relaxed">
+          Gunakan lima kolom fitur standar berikut. Kolom jam kerja menerima ejaan <code>average_montly_hours</code> atau <code>average_monthly_hours</code>.
+        </p>
+        <div class="mt-3 p-3.5 rounded-xl bg-slate-900 text-teal-300 font-mono text-[11px] overflow-x-auto leading-relaxed">
+          satisfaction_level,last_evaluation,number_project,average_montly_hours,time_spend_company<br />
+          0.72,0.81,4,201,3<br />
+          0.38,0.64,6,258,5
+        </div>
+      </div>
 
-    <section class="card audit-step-card">
-      <span class="eyebrow">Langkah 2</span>
-      <h2>Unggah data</h2>
-      <p>Maksimal 5 MB dan 20.000 baris. Kolom jam kerja menerima ejaan <code>average_montly_hours</code> atau <code>average_monthly_hours</code>.</p>
+      <a
+        class="w-full py-2.5 px-4 rounded-xl border-2 border-[#0f213a] text-[#0f213a] hover:bg-[#0f213a] hover:text-white font-bold text-xs transition-colors flex items-center justify-center gap-2"
+        href="/audit/template.csv"
+      >
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        <span>Unduh template CSV</span>
+      </a>
+    </div>
+
+    <!-- Kartu Unggah Berkas (Langkah 2) -->
+    <div class="lg:col-span-7 bg-white rounded-2xl p-5 sm:p-6 border border-slate-200/80 shadow-xs space-y-4">
+      <div class="flex flex-wrap items-center justify-between gap-2">
+        <div>
+          <span class="text-[11px] font-bold uppercase tracking-wider text-teal-700 bg-teal-50 px-2.5 py-1 rounded-md">Langkah 2</span>
+          <h3 class="text-base font-bold text-slate-900 mt-2">Unggah data CSV</h3>
+        </div>
+        <div class="flex items-center gap-2 text-[11px] font-semibold text-slate-600">
+          <span class="px-2.5 py-1 rounded-lg bg-slate-100">Maksimal 5 MB</span>
+          <span class="px-2.5 py-1 rounded-lg bg-slate-100">Maksimal 20.000 baris</span>
+        </div>
+      </div>
+
       <form
-        class="upload-form"
+        class="upload-form space-y-4"
         action="/audit"
         method="post"
         enctype="multipart/form-data"
@@ -33,13 +57,46 @@
         hx-target="#audit-results"
         hx-swap="outerHTML"
         hx-encoding="multipart/form-data"
+        hx-indicator="#htmxIndicator"
       >
-        <label for="csv-file">Pilih file CSV</label>
-        <input id="csv-file" type="file" name="file" accept=".csv,text/csv" required>
-        <button class="button button-primary button-full" type="submit">Proses audit</button>
-        <span class="htmx-indicator" aria-live="polite">Memvalidasi dan memproses file…</span>
-        <p class="chart-note">Pastikan Anda berwenang menggunakan data ini. File tidak disimpan permanen; tautan hasil berlaku 15 menit.</p>
+        <!-- Dropzone Interaktif -->
+        <div
+          id="csvDropzone"
+          onclick="document.getElementById('csv-file').click()"
+          class="border-2 border-dashed border-slate-300 hover:border-teal-500 hover:bg-teal-50/30 rounded-2xl p-6 text-center cursor-pointer transition-all"
+        >
+          <input
+            id="csv-file"
+            type="file"
+            name="file"
+            accept=".csv,text/csv"
+            required
+            class="hidden"
+            onchange="handleAuditFileChange(event)"
+          />
+          <div class="w-12 h-12 rounded-2xl bg-teal-50 text-teal-600 flex items-center justify-center mx-auto mb-3">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          </div>
+          <p id="dropzoneLabel" class="text-sm font-bold text-slate-800">Seret &amp; lepas file CSV di sini, atau klik untuk memilih file</p>
+          <p id="dropzoneSub" class="text-xs text-slate-500 mt-1">Format .csv dengan pemisah koma dan encoding UTF-8</p>
+        </div>
+
+        <!-- Banner status berkas -->
+        <div id="auditFileStatus" class="hidden p-3 rounded-xl text-xs font-semibold bg-teal-50 border border-teal-200 text-teal-800"></div>
+
+        <button
+          class="w-full py-3 px-4 rounded-xl bg-teal-600 hover:bg-teal-700 active:bg-teal-800 text-white font-bold text-sm shadow-xs transition-colors flex items-center justify-center gap-2"
+          type="submit"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          <span>Proses audit</span>
+        </button>
+
+        <p class="text-[11px] text-slate-400 text-center leading-relaxed">
+          Pastikan Anda berwenang menggunakan data ini. File tidak disimpan permanen; tautan unduhan hasil audit berlaku selama 15 menit.
+        </p>
       </form>
-    </section>
+    </div>
   </div>
+</div>
 {% endblock %}

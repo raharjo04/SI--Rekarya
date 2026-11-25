@@ -1,9 +1,44 @@
-{% macro stepper(active_step) %}
-  <ol class="stepper" aria-label="Tahapan audit">
-    {% for label in ["Siapkan file", "Unggah CSV", "Tinjau hasil"] %}
-      <li class="{% if active_step == loop.index %}is-active{% elif active_step > loop.index %}is-complete{% endif %}" {% if active_step == loop.index %}aria-current="step"{% endif %}>
-        <span>{{ loop.index }}</span>{{ label }}
-      </li>
-    {% endfor %}
+{% macro stepper(current_step) %}
+<div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs mb-6">
+  <ol class="stepper grid grid-cols-1 md:grid-cols-3 gap-4" aria-label="Langkah audit data">
+    <li
+      class="flex items-center gap-3.5 p-3 rounded-xl transition-colors {% if current_step >= 1 %}bg-teal-50/70 border border-teal-200 is-active{% else %}bg-slate-50 border border-slate-200{% endif %} {% if current_step > 1 %}is-complete{% endif %}"
+      {% if current_step == 1 %}aria-current="step"{% endif %}
+    >
+      <span class="w-8 h-8 rounded-full {% if current_step >= 1 %}bg-teal-600 text-white{% else %}bg-slate-300 text-slate-700{% endif %} font-bold text-sm flex items-center justify-center shrink-0 tabular-nums">
+        {% if current_step > 1 %}&check;{% else %}1{% endif %}
+      </span>
+      <div>
+        <div class="text-xs font-bold text-slate-900">Siapkan File CSV</div>
+        <div class="text-[11px] text-slate-600">Gunakan template 5 kolom standar</div>
+      </div>
+    </li>
+
+    <li
+      class="flex items-center gap-3.5 p-3 rounded-xl transition-colors {% if current_step >= 2 %}bg-teal-50/70 border border-teal-200 is-active{% else %}bg-slate-50 border border-slate-200{% endif %} {% if current_step > 2 %}is-complete{% endif %}"
+      {% if current_step == 2 %}aria-current="step"{% endif %}
+    >
+      <span class="w-8 h-8 rounded-full {% if current_step >= 2 %}bg-teal-600 text-white{% else %}bg-slate-300 text-slate-700{% endif %} font-bold text-sm flex items-center justify-center shrink-0 tabular-nums">
+        {% if current_step > 2 %}&check;{% else %}2{% endif %}
+      </span>
+      <div>
+        <div class="text-xs font-bold text-slate-900">Unggah File CSV</div>
+        <div class="text-[11px] text-slate-600">Maks. 5 MB &amp; 20.000 baris</div>
+      </div>
+    </li>
+
+    <li
+      class="flex items-center gap-3.5 p-3 rounded-xl transition-colors {% if current_step == 3 %}bg-teal-50/70 border border-teal-200 is-active{% else %}bg-slate-50 border border-slate-200{% endif %}"
+      {% if current_step == 3 %}aria-current="step"{% endif %}
+    >
+      <span class="w-8 h-8 rounded-full {% if current_step == 3 %}bg-teal-600 text-white{% else %}bg-slate-300 text-slate-700{% endif %} font-bold text-sm flex items-center justify-center shrink-0 tabular-nums">
+        3
+      </span>
+      <div>
+        <div class="text-xs font-bold text-slate-900">Hasil Audit &amp; Ekspor</div>
+        <div class="text-[11px] text-slate-600">Tinjau klaster &amp; unduh hasil</div>
+      </div>
+    </li>
   </ol>
+</div>
 {% endmacro %}
