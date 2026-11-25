@@ -13,6 +13,7 @@ from core import recommender as recommender_module
 from core.charts import (
     cluster_distribution,
     cluster_map,
+    employee_group_comparison,
     evaluation_charts,
     project_turnover,
     summary_scatter,
@@ -391,8 +392,11 @@ def test_cluster_charts_use_profile_colors_and_pca_variance(fitted_artifacts):
         fitted_artifacts["pca"],
         fitted_artifacts["kmeans"],
     )
-    assert "varians" in pca_figure.layout.xaxis.title.text
-    assert "varians" in pca_figure.layout.yaxis.title.text
+    assert "Peta kemiripan" in pca_figure.layout.xaxis.title.text
+    assert "Peta kemiripan" in pca_figure.layout.yaxis.title.text
+    assert "varians" not in pca_figure.layout.xaxis.title.text.casefold()
+    assert "centroid" not in str(pca_figure.layout.annotations).casefold()
+    assert pca_figure.layout.height >= 520
 
 
 def test_summary_and_evaluation_charts_build_figures():
@@ -407,7 +411,7 @@ def test_summary_and_evaluation_charts_build_figures():
         {
             "jumlah_proyek": [2, 3],
             "jumlah_karyawan": [10, 20],
-            "turnover_rate": [0.2, 0.1],
+            "turnover_rate": [0.2, 0.4],
         }
     )
     evaluation = pd.DataFrame(
@@ -417,6 +421,32 @@ def test_summary_and_evaluation_charts_build_figures():
             "silhouette": [0.3, 0.4, 0.35],
         }
     )
-    assert len(summary_scatter(sample).data) == 2
-    assert len(project_turnover(project_summary).data) == 2
+    scatter_figure = summary_scatter(sample)
+    assert len(scatter_figure.data) == 2
+    assert scatter_figure.layout.title.text is None
+    project_figure = project_turnover(project_summary)
+    assert len(project_figure.data) == 1
+    assert project_figure.data[0].orientation == "h"
+    assert "n=" in project_figure.data[0].text[0]
+    assert list(project_figure.data[0].marker.color) == ["#0D9488", "#DC2626"]
+    assert project_figure.layout.title.text is None
     assert len(evaluation_charts(evaluation, optimal_k=3).data) == 2
+
+
+def test_summary_charts_limit_points_and_compare_employee_to_group():
+    sample = pd.DataFrame(
+        {
+            "average_montly_hours": list(range(96, 2097)),
+            "satisfaction_level": [0.5] * 2001,
+            "left": [0, 1] * 1000 + [0],
+        }
+    )
+    scatter = summary_scatter(sample)
+    assert sum(len(trace.x) for trace in scatter.data) <= 1500
+
+    values = {feature: 0.5 for feature in FEATURES}
+    means = {feature: 0.4 for feature in FEATURES}
+    comparison = employee_group_comparison(values, means)
+    assert len(comparison.data) == 2
+    assert comparison.layout.barmode == "group"
+    assert len(comparison.data[0].x) == len(FEATURES)

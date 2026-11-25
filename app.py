@@ -1,6 +1,6 @@
 import streamlit as st
 
-from core.ui_theme import inject_custom_css, page_header, sidebar_branding
+from core.ui_theme import inject_custom_css, sidebar_branding
 
 st.set_page_config(
     page_title="SI-REKARYA",
@@ -38,9 +38,4 @@ navigation = st.navigation(
     ]
 )
 
-page_header(
-    "SI-REKARYA",
-    "Sistem Inteligensi Retensi & Klasterisasi Karyawan Berbasis K-Means",
-    "✦",
-)
 navigation.run()

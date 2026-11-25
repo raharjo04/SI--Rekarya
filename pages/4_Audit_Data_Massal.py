@@ -5,13 +5,45 @@ import streamlit as st
 
 from core.artifacts import load_artifacts
 from core.charts import cluster_distribution
-from core.config import BATCH_MAX_BYTES, BATCH_MAX_ROWS
+from core.config import (
+    BATCH_MAX_BYTES,
+    BATCH_MAX_ROWS,
+    FEATURE_LABELS,
+)
 from core.predictor import predict_batch
 from core.recommender import recommend
 from core.ui_theme import inject_custom_css, page_header
 
 
+def _format_number(value: int) -> str:
+    return f"{value:,}".replace(",", ".")
+
+
+def _show_stepper(placeholder, active_step: int) -> None:
+    labels = ("Unduh template", "Unggah CSV", "Tinjau hasil")
+    steps = []
+    for number, label in enumerate(labels, start=1):
+        state = "si-step-active" if number == active_step else ""
+        if number < active_step:
+            state = "si-step-complete"
+        steps.append(
+            f'<div class="si-step {state}">'
+            f'<span class="si-step-number">{number}</span>{label}</div>'
+        )
+    placeholder.markdown(
+        '<div style="display:grid;grid-template-columns:repeat(3,1fr);'
+        'gap:12px;margin:12px 0 20px">'
+        + "".join(steps)
+        + "</div>",
+        unsafe_allow_html=True,
+    )
+
+
 inject_custom_css()
+page_header(
+    "Audit Data Massal",
+    "Validasi data karyawan dari CSV dan tinjau hasil kelompok beserta risikonya.",
+)
 
 template = pd.DataFrame(
     columns=[
@@ -23,48 +55,42 @@ template = pd.DataFrame(
     ]
 )
 
-header_column, download_column = st.columns([3, 1], gap="large")
-with header_column:
-    page_header(
-        "Audit Data Massal",
-        "Validasi dan prediksi persona karyawan dari satu file CSV.",
-        "📋",
+with st.container(border=True):
+    st.markdown("### Langkah 1 — Siapkan template")
+    st.caption(
+        "Gunakan nama kolom dan urutan data di bawah. Contoh ini hanya menunjukkan "
+        "format, bukan data karyawan sebenarnya."
     )
-with download_column:
-    st.markdown("")
-    st.markdown("")
+    st.code(
+        "satisfaction_level,last_evaluation,number_project,"
+        "average_montly_hours,time_spend_company\n"
+        "0.72,0.81,4,201,3\n"
+        "0.38,0.64,6,258,5",
+        language="csv",
+    )
     st.download_button(
-        "⬇️  Unduh template CSV",
+        "Unduh template CSV",
         data=template.to_csv(index=False).encode("utf-8"),
         file_name="template_audit_karyawan.csv",
         mime="text/csv",
         width="stretch",
     )
 
-step_columns = st.columns(3, gap="medium")
-for step_column, number, title in zip(
-    step_columns,
-    ("1", "2", "3"),
-    ("Unduh template", "Unggah CSV", "Tinjau hasil"),
-):
-    with step_column:
-        st.markdown(
-            f'<div class="si-step"><span class="si-step-number">{number}</span>'
-            f"{title}</div>",
-            unsafe_allow_html=True,
-        )
-
+stepper = st.empty()
 with st.container(border=True):
-    st.markdown("### Unggah data karyawan")
+    st.markdown("### Langkah 2 — Unggah data")
     st.caption(
-        "Format CSV, maksimal 5 MB dan 20.000 baris. "
-        "Kolom jam kerja menerima average_montly_hours maupun average_monthly_hours."
+        "Maksimal 5 MB dan 20.000 baris. Kolom jam kerja menerima "
+        "average_montly_hours maupun average_monthly_hours."
     )
     uploaded = st.file_uploader("Pilih file CSV", type=["csv"])
 
 if uploaded is None:
-    st.info("Pilih file CSV untuk memulai audit.")
+    _show_stepper(stepper, 1)
+    st.info("Pilih file CSV untuk melanjutkan audit.")
     st.stop()
+
+_show_stepper(stepper, 2)
 if not uploaded.name.lower().endswith(".csv"):
     st.error("File harus berformat .csv.")
     st.stop()
@@ -118,16 +144,22 @@ if not predictions.empty:
     predictions["Risk_Level"] = risks
     predictions["Rekomendasi_HR"] = hr_recommendations
 
-st.markdown("### Ringkasan hasil audit")
-total, valid, rejected_count = st.columns(3, gap="large")
-total.metric("Total baris diproses", f"{len(dataframe):,}".replace(",", "."))
-valid.metric("Baris valid", f"{len(predictions):,}".replace(",", "."))
-rejected_count.metric("Baris ditolak", f"{len(rejected):,}".replace(",", "."))
+_show_stepper(stepper, 3)
+with st.container(border=True):
+    st.markdown("### Ringkasan hasil audit")
+    processed, rejected_count = st.columns(2, gap="large")
+    processed.metric(
+        "Baris berhasil diproses",
+        f"{len(predictions):,}".replace(",", "."),
+    )
+    rejected_count.metric(
+        "Baris ditolak",
+        f"{len(rejected):,}".replace(",", "."),
+    )
 
 if not predictions.empty:
     with st.container(border=True):
-        st.markdown("### Distribusi klaster hasil batch")
-        st.caption("Proporsi prediksi per persona pada data yang berhasil divalidasi.")
+        st.markdown("### Distribusi persona")
         st.plotly_chart(
             cluster_distribution(predictions),
             width="stretch",
@@ -156,49 +188,81 @@ if not predictions.empty:
         predictions["Persona"].isin(selected_personas)
         & predictions["Risk_Level"].isin(selected_risks)
     ]
-    display_predictions = filtered_predictions.head(100).copy()
-    cluster_colors = {
-        int(profile["cluster"]): profile["badge_color"]
-        for profile in artifacts["profiles"]["clusters"]
+
+    internal_columns = {
+        "Cluster",
+        "badge_color",
+        "Jarak centroid",
+        "PCA1",
+        "PCA2",
+        "Peringatan",
+    }
+    display_columns = [
+        column for column in predictions.columns if column not in internal_columns
+    ]
+    display_predictions = filtered_predictions[display_columns].head(100).copy()
+    display_predictions = display_predictions.rename(
+        columns={
+            **FEATURE_LABELS,
+            "average_monthly_hours": FEATURE_LABELS["average_montly_hours"],
+        }
+    )
+
+    risk_style = {
+        "Sangat Tinggi": ("#FEE2E2", "#991B1B", "#DC2626"),
+        "Tinggi": ("#FEE2E2", "#991B1B", "#DC2626"),
+        "Sedang": ("#FEF3C7", "#78350F", "#B45309"),
+        "Rendah": ("#CCFBF1", "#115E59", "#0D9488"),
     }
 
     def style_risk_cell(row: pd.Series) -> list[str]:
-        color = cluster_colors.get(int(row["Cluster"]), "#1E3A8A")
         styles = [""] * len(row)
         if "Risk_Level" in row.index:
             risk_index = row.index.get_loc("Risk_Level")
+            background, foreground, border = risk_style.get(
+                str(row["Risk_Level"]),
+                ("#E2E8F0", "#334155", "#64748B"),
+            )
             styles[risk_index] = (
-                f"background-color: #F8FAFC; color: #1E293B; "
-                f"border-left: 4px solid {color}; font-weight: 700"
+                f"background-color: {background}; color: {foreground}; "
+                f"border-left: 4px solid {border}; font-weight: 700"
             )
         return styles
 
     with st.container(border=True):
         st.caption(
-            f"Menampilkan {len(display_predictions):,} dari "
-            f"{len(filtered_predictions):,} baris sesuai filter (maksimal 100)."
+            f"Menampilkan {_format_number(len(display_predictions))} dari "
+            f"{_format_number(len(filtered_predictions))} baris sesuai filter "
+            "(maksimal 100)."
         )
         if display_predictions.empty:
             st.info("Tidak ada baris yang cocok dengan filter pilihan.")
         else:
             st.dataframe(
-                display_predictions.style.apply(style_risk_cell, axis=1).hide(
-                    axis="index"
-                ),
+                display_predictions.style.apply(style_risk_cell, axis=1).format(
+                    precision=2,
+                    thousands=".",
+                    decimal=",",
+                ).hide(axis="index"),
                 width="stretch",
             )
 
-    csv_result = predictions.to_csv(index=False).encode("utf-8-sig")
-    st.download_button(
-        "⬇️  Unduh hasil audit CSV",
-        data=csv_result,
-        file_name="hasil_audit_karyawan.csv",
-        mime="text/csv",
-        width="stretch",
-    )
+    export_columns = [
+        column for column in predictions.columns if column not in internal_columns
+    ]
+    csv_result = predictions[export_columns].to_csv(index=False).encode("utf-8-sig")
+    with st.container(border=True):
+        st.markdown("### Unduh hasil audit")
+        st.download_button(
+            "Unduh hasil audit CSV",
+            data=csv_result,
+            file_name="hasil_audit_karyawan.csv",
+            mime="text/csv",
+            width="stretch",
+        )
 else:
     st.info("Tidak ada baris valid untuk diprediksi.")
 
 if not rejected.empty:
-    with st.expander("Lihat Detail Baris yang Ditolak"):
+    with st.expander("Lihat detail baris yang ditolak"):
         st.dataframe(rejected, hide_index=True, width="stretch")

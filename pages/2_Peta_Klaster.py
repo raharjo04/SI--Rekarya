@@ -3,15 +3,21 @@ import streamlit as st
 
 from core.artifacts import load_artifacts
 from core.charts import cluster_map, evaluation_charts
-from core.config import FEATURE_LABELS, FEATURES
+from core.config import FEATURES
 from core.data import load_dataset
 from core.ui_theme import (
+    PERSONA_COLORS,
     inject_custom_css,
     metric_card,
     page_header,
     persona_badge,
     risk_badge,
 )
+
+
+def _format_number(value: float, decimals: int = 0) -> str:
+    formatted = f"{value:,.{decimals}f}"
+    return formatted.replace(",", "\0").replace(".", ",").replace("\0", ".")
 
 
 inject_custom_css()
@@ -28,9 +34,8 @@ except ValueError as error:
     st.stop()
 
 page_header(
-    "Peta Klaster",
-    "Jelajahi posisi PCA, kualitas model, dan strategi retensi untuk setiap persona.",
-    "🗺️",
+    "Peta Persona Karyawan",
+    "Kenali empat kelompok karyawan dan pola kemiripan karakteristik mereka.",
 )
 
 profiles = artifacts["profiles"]["clusters"]
@@ -41,25 +46,56 @@ if missing_features:
     st.error(f"Kolom dataset tidak tersedia: {', '.join(missing_features)}.")
     st.stop()
 
-tab_pca, tab_evaluation, tab_profiles = st.tabs(
-    [
-        "Visualisasi Klaster PCA 2D",
-        "Evaluasi Model (K=2–8)",
-        "Profil & Strategi Klaster",
-    ]
+tab_personas, tab_map, tab_technical = st.tabs(
+    ["Persona karyawan", "Peta kemiripan karyawan", "Detail teknis"]
 )
 
-with tab_pca:
-    variance = getattr(artifacts["pca"], "explained_variance_ratio_", [])
-    explained_variance = float(sum(variance[:2])) if len(variance) >= 2 else 0.0
-    first, second = st.columns(2, gap="large")
-    with first:
-        metric_card("Jumlah klaster terpilih", f"K = {optimal_k}", "◈")
-    with second:
-        metric_card("Varians PCA (PC1 + PC2)", f"{explained_variance:.1%}", "∿")
+with tab_personas:
+    card_columns = st.columns(2, gap="large")
+    for index, profile in enumerate(profiles):
+        means = profile["means"]
+        satisfaction = float(means["satisfaction_level"])
+        if satisfaction < 0.35:
+            satisfaction_text = "kepuasan cenderung rendah"
+        elif satisfaction < 0.65:
+            satisfaction_text = "kepuasan berada di tingkat menengah"
+        else:
+            satisfaction_text = "kepuasan cenderung tinggi"
+        description = (
+            f"Karyawan dalam kelompok ini memiliki {satisfaction_text}, "
+            f"bekerja rata-rata {_format_number(means['average_montly_hours'])} jam "
+            f"per bulan, dan menangani sekitar "
+            f"{_format_number(means['number_project'], 1)} proyek."
+        )
+        with card_columns[index % 2]:
+            with st.container(border=True):
+                persona_badge(
+                    profile["persona"],
+                    PERSONA_COLORS.get(profile["persona"], profile["badge_color"]),
+                )
+                risk_badge(profile["risk_level"])
+                st.markdown("")
+                metrics = st.columns(3)
+                metrics[0].metric(
+                    "Karyawan",
+                    _format_number(profile["count"]),
+                )
+                metrics[1].metric(
+                    "Bagian dari tim",
+                    _format_number(profile["percentage"], 1) + "%",
+                )
+                metrics[2].metric(
+                    "Pernah keluar",
+                    _format_number(profile["turnover_rate"] * 100, 1) + "%",
+                )
+                st.markdown(description)
+                with st.expander("Rekomendasi HR untuk persona ini"):
+                    for strategy in profile["strategy"]:
+                        st.markdown(f"- {strategy}")
 
-    sample = dataset.sample(n=min(5000, len(dataset)), random_state=42)
-    with st.spinner("Membentuk koordinat PCA..."):
+with tab_map:
+    sample = dataset.sample(n=min(2000, len(dataset)), random_state=42)
+    with st.spinner("Membentuk peta kemiripan karyawan..."):
         scaled = artifacts["scaler"].transform(sample[FEATURES])
         coordinates = artifacts["pca"].transform(scaled)
         points = pd.DataFrame(
@@ -71,10 +107,7 @@ with tab_pca:
         )
 
     with st.container(border=True):
-        st.markdown("### Sebaran karyawan per persona")
-        st.caption(
-            "Titik menunjukkan sampel karyawan; simbol berlian menandai centroid tiap klaster."
-        )
+        st.markdown("### Kelompok dengan karakteristik serupa terlihat berdekatan")
         st.plotly_chart(
             cluster_map(
                 points,
@@ -86,16 +119,30 @@ with tab_pca:
             key="cluster_map",
         )
         st.caption(
-            f"Peta menampilkan {len(points):,} dari {len(dataset):,} karyawan "
-            "(sampel tetap, seed 42)."
+            f"Peta menampilkan {_format_number(len(points))} dari "
+            f"{_format_number(len(dataset))} karyawan."
         )
 
-with tab_evaluation:
-    st.markdown("### Evaluasi kualitas klaster")
+with tab_technical:
+    variance = getattr(artifacts["pca"], "explained_variance_ratio_", [])
+    explained_variance = float(sum(variance[:2])) if len(variance) >= 2 else 0.0
+    metric_columns = st.columns(2, gap="large")
+    with metric_columns[0]:
+        metric_card("Jumlah kelompok (K)", f"K = {optimal_k}", "◈")
+    with metric_columns[1]:
+        metric_card(
+            "Varians peta kemiripan",
+            _format_number(explained_variance * 100, 1) + "%",
+            "∿",
+        )
     st.caption(
-        "K terpilih ditandai pada tabel dan garis putus-putus pada grafik evaluasi."
+        "K adalah jumlah kelompok; varians menunjukkan informasi yang tertangkap "
+        "pada peta; Silhouette, DBI, dan WCSS membandingkan kekompakan serta "
+        "pemisahan kelompok."
     )
+
     with st.container(border=True):
+        st.markdown("### Evaluasi model")
         st.plotly_chart(
             evaluation_charts(evaluation, optimal_k),
             width="stretch",
@@ -112,7 +159,7 @@ with tab_evaluation:
         }
     ).copy()
     evaluation_display["Status"] = evaluation_display["K"].map(
-        lambda value: "K terpilih" if int(value) == optimal_k else ""
+        lambda value: "Jumlah terpilih" if int(value) == optimal_k else ""
     )
 
     def highlight_selected(row: pd.Series) -> list[str]:
@@ -122,14 +169,17 @@ with tab_evaluation:
             ] * len(row)
         return [""] * len(row)
 
+    def format_id(value: float, decimals: int) -> str:
+        return _format_number(value, decimals)
+
     styled_evaluation = (
         evaluation_display.style.apply(highlight_selected, axis=1)
         .format(
             {
-                "WCSS": "{:,.2f}",
-                "Silhouette": "{:.3f}",
-                "Davies-Bouldin": "{:.3f}",
-                "Calinski-Harabasz": "{:,.2f}",
+                "WCSS": lambda value: format_id(value, 2),
+                "Silhouette": lambda value: format_id(value, 3),
+                "Davies-Bouldin": lambda value: format_id(value, 3),
+                "Calinski-Harabasz": lambda value: format_id(value, 2),
             }
         )
         .hide(axis="index")
@@ -137,89 +187,3 @@ with tab_evaluation:
     with st.container(border=True):
         st.markdown("### Tabel evaluasi lengkap")
         st.dataframe(styled_evaluation, width="stretch")
-
-with tab_profiles:
-    st.markdown("### Persona dan strategi retensi")
-    st.caption(
-        "Nama persona, tingkat risiko, warna, dan strategi dibaca dari profil klaster."
-    )
-    persona_order = {
-        "High Burnout": 0,
-        "Disengaged": 1,
-        "Senior Veteran": 2,
-        "Engaged Stars": 3,
-    }
-    profiles_for_display = sorted(
-        profiles,
-        key=lambda profile: (
-            persona_order.get(profile["persona"], len(persona_order)),
-            int(profile["cluster"]),
-        ),
-    )
-    card_columns = st.columns(2, gap="large")
-    for index, profile in enumerate(profiles_for_display):
-        with card_columns[index % 2]:
-            with st.container(border=True):
-                persona_badge(profile["persona"], profile["badge_color"])
-                st.markdown(f"#### Klaster {int(profile['cluster'])}")
-                risk_badge(profile["risk_level"])
-
-                metrics = st.columns(3)
-                metrics[0].metric(
-                    "Karyawan",
-                    f"{int(profile['count']):,}".replace(",", "."),
-                )
-                metrics[1].metric(
-                    "Proporsi",
-                    f"{float(profile['percentage']):.1f}%",
-                )
-                metrics[2].metric(
-                    "Turnover",
-                    f"{float(profile['turnover_rate']):.1%}",
-                )
-
-                st.markdown("**Rata-rata fitur karyawan**")
-                feature_columns = st.columns(2)
-                for feature_index, feature in enumerate(FEATURES):
-                    feature_columns[feature_index % 2].metric(
-                        FEATURE_LABELS.get(feature, feature),
-                        f"{float(profile['means'][feature]):.2f}",
-                    )
-
-                with st.expander("Rekomendasi Strategi HR"):
-                    for strategy in profile["strategy"]:
-                        st.markdown(f"- {strategy}")
-
-    with st.expander("Lihat tabel profil lengkap"):
-        profile_rows = []
-        for profile in profiles:
-            row = {
-                "Klaster": int(profile["cluster"]),
-                "Persona": profile["persona"],
-                "Risiko": profile["risk_level"],
-                "Karyawan": int(profile["count"]),
-                "Proporsi (%)": float(profile["percentage"]),
-                "Turnover (%)": float(profile["turnover_rate"]) * 100,
-                "Warna": profile["badge_color"],
-            }
-            row.update(
-                {
-                    FEATURE_LABELS.get(feature, feature): profile["means"][feature]
-                    for feature in FEATURES
-                }
-            )
-            profile_rows.append(row)
-        st.dataframe(
-            pd.DataFrame(profile_rows).style.format(
-                {
-                    "Proporsi (%)": "{:.1f}",
-                    "Turnover (%)": "{:.1f}",
-                    **{
-                        FEATURE_LABELS.get(feature, feature): "{:.2f}"
-                        for feature in FEATURES
-                    },
-                }
-            ),
-            hide_index=True,
-            width="stretch",
-        )
