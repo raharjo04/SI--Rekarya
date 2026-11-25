@@ -7,8 +7,10 @@ database.
 
 ## Cara menjalankan (Windows)
 
-Buka folder proyek yang berisi `app.py` di VS Code, lalu pilih **Terminal >
-New Terminal**. Jalankan langkah-langkah berikut di terminal itu.
+UI utama dengan visualisasi custom menggunakan FastAPI. Jalankan perintah dari
+folder proyek yang berisi `app.py` (di VS Code: **Terminal > New Terminal**).
+
+### Setup pertama kali
 
 1. Pastikan Python 3.11 tersedia:
 
@@ -18,38 +20,53 @@ New Terminal**. Jalankan langkah-langkah berikut di terminal itu.
 
 2. Letakkan `HR_comma_sep.csv` di folder `data\` atau di root proyek.
 
-3. Buat lingkungan Python proyek (lewati jika `.venv` sudah ada):
+3. Buat virtual environment dan pasang dependensi:
 
    ```powershell
    py -3.11 -m venv .venv
-   ```
-
-4. Pasang kebutuhan aplikasi:
-
-   ```powershell
    .\.venv\Scripts\python.exe -m pip install -r requirements.txt
    ```
 
-5. Siapkan model (pertama kali atau setelah dataset diganti):
+4. Jika file model di `artifacts\` belum tersedia, atau dataset berubah,
+   siapkan model:
 
    ```powershell
    .\.venv\Scripts\python.exe train_pipeline.py
    ```
 
-6. Jalankan UI FastAPI:
+   Langkah ini tidak perlu dijalankan setiap kali aplikasi dibuka.
 
-   ```powershell
-   .\.venv\Scripts\python.exe -m uvicorn webapp.main:app --reload
-   ```
+### Menjalankan aplikasi
 
-7. Buka `http://127.0.0.1:8000`. Untuk berhenti, kembali ke terminal lalu
-   tekan **Ctrl+C**.
+Di terminal pada folder proyek, jalankan:
 
-UI Streamlit lama tetap tersedia selama proses migrasi:
+```powershell
+.\.venv\Scripts\python.exe -m uvicorn webapp.main:app --reload
+```
+
+Setelah muncul pesan bahwa server berjalan, buka
+<http://127.0.0.1:8000>. Halaman yang tersedia: Ringkasan SDM, Persona & Peta,
+Deteksi Karyawan, dan Audit Data Massal. Biarkan terminal tetap terbuka selama
+aplikasi digunakan; tekan **Ctrl+C** di terminal untuk menghentikannya.
+
+Jika port 8000 sedang dipakai, jalankan dengan port lain, misalnya:
+
+```powershell
+.\.venv\Scripts\python.exe -m uvicorn webapp.main:app --reload --port 8001
+```
+
+Lalu buka <http://127.0.0.1:8001>.
+
+### UI Streamlit lama (opsional)
+
+Streamlit hanya UI lama dan tidak diperlukan untuk menjalankan FastAPI. Untuk
+membuka UI lama secara terpisah:
 
 ```powershell
 .\.venv\Scripts\python.exe -m streamlit run app.py
 ```
+
+Biasanya Streamlit tersedia di <http://localhost:8501>.
 
 Audit CSV menerima file maksimal 5 MB dan 20.000 baris data. Hasil unduhan audit
 disimpan sementara di memori selama 15 menit.
